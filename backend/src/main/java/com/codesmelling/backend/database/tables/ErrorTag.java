@@ -18,6 +18,8 @@ public class ErrorTag {
 
     private int lineNumber;
 
+    // dodać pole na nazwe pliku (jesli zadanie jest na wiele plików to id quizu nic nam nie mówi)
+
     @Enumerated(EnumType.STRING)
     private ErrorType type;
 
