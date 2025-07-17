@@ -13,5 +13,16 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  frontend:
+    build: ./frontend
+    container_name: codesmelling-frontend
+    ports:
+      - "3000:3000"
+    command: npm run dev
+    volumes:
+      - ./frontend:/usr/src/app
+      - next-cache:/usr/src/app/.next
+
 volumes:
   postgres-data:
+  next-cache:
