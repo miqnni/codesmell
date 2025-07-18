@@ -1,0 +1,16 @@
+FROM node:22.15.0
+
+ENV NODE_ENV=development
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+RUN mkdir -p .next
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
