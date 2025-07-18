@@ -23,6 +23,12 @@ public class UserProgress {
 
     private boolean completed;
 
+//    @Column(name = "user_id")
+//    private Long userId;
+//
+//    @Column(name = "quiz_id")
+//    private Long quizId;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private AppUser user;
