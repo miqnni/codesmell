@@ -2,7 +2,7 @@ FROM node:22.15.0
 
 ENV NODE_ENV=development
 
-WORKDIR /app
+WORKDIR /frontend
 
 COPY package*.json ./
 RUN npm install

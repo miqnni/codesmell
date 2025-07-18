@@ -20,9 +20,14 @@ services:
       - "3000:3000"
     command: npm run dev
     volumes:
-      - ./frontend:/usr/src/app
-      - next-cache:/usr/src/app/.next
+      - ./frontend:/frontend
+      - /frontend/node_modules
+    stdin_open: true
+    tty: true
+    environment:
+      - WATCHPACK_POLLING=true
+    depends_on:
+      - postgres
 
 volumes:
   postgres-data:
-  next-cache:
