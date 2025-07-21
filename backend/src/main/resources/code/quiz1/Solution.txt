@@ -1,0 +1,3 @@
+W tym zadaniu występują 2 problemy tego samego typu.
+W pliku Main.java w linijce 9tej mamy brak średnika na końcu linii - błąd typu TYPO.
+W pliku Test.java zamaist assertEquals mamy asserEquals - znów literówka.
