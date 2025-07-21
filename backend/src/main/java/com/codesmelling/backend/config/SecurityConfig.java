@@ -14,8 +14,9 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Wyłączenie CSRF dla prostoty testów
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/import").permitAll()  // <-- pozwól na /import bez logowania
-                        .anyRequest().authenticated()            // reszta endpointów wymaga autoryzacji
+                        .anyRequest().permitAll()
+                        //.requestMatchers("/import", "/list").permitAll()  // <-- pozwól na /import bez logowania
+                        //.anyRequest().authenticated()            // reszta endpointów wymaga autoryzacji
                 )
                 .formLogin(Customizer.withDefaults()); // nadal będzie działać login form, ale nie dla /import
 

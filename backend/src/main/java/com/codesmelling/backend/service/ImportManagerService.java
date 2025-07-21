@@ -12,6 +12,7 @@ public class ImportManagerService {
     private final QuizService quizCsvService;
     private final ProgressService progressCsvService;
     private final SequenceResetService sequenceResetService;
+    private final ErrorTagService errorTagCsvService;
 
 
     public void importAll() throws IOException {
@@ -19,5 +20,6 @@ public class ImportManagerService {
         userCsvService.importUsers();
         quizCsvService.importQuizzes();
         progressCsvService.importProgress();
+        errorTagCsvService.importAllErrorTags();
     }
 }
