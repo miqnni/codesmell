@@ -1,0 +1,14 @@
+[
+    {
+        "path": "hello.py",
+        "content": "user = input(\"Your name:\")\nprint(\"Hello, \" + user)"
+    },
+    {
+        "path": "utils/add.py",
+        "content": "def add(a, b):\n\treturn a + b"
+    },
+    {
+        "path": "utils/subtract.py",
+        "content": "def subtract(a, b):\n\treturn a - b"
+    }
+]
