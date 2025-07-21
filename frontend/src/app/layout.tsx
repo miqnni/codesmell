@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Header from "@/components/layout/Header";
 import "./globals.css";
 import { Provider } from "@/components/ui/provider"
+import Header from "@/components/layout/Header";
+import {Box} from "@chakra-ui/react"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,7 +25,10 @@ export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html suppressHydrationWarning>
       <body>
-        <Provider>{children}</Provider>
+        <Provider>
+          <Header />
+          <Box px={10} py={5}>{children}</Box>
+        </Provider>
       </body>
     </html>
   )

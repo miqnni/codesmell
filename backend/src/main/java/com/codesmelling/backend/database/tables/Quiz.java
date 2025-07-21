@@ -18,8 +18,8 @@ public class Quiz {
     private Long id;
 
     // Np. "java/quiz1", czyli ścieżka względem np. /resources/quizzes
-    @Column(name = "directory_path")
-    private String directoryPath;
+    @Column(name = "quizName")
+    private String quizName;
 
     // Błędy przypisane do tego quizu
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
