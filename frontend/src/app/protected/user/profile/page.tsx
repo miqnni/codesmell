@@ -14,11 +14,20 @@ import {
 
 const UserAvatar = ({ avatarUrl, onAvatarChange }: { avatarUrl: string; onAvatarChange: (url: string) => void }) => {
   const { open: isOpen, onOpen, onClose } = useDisclosure();
-  const [newAvatar, setNewAvatar] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
 
   const handleSave = () => {
-    if (newAvatar) {
-      onAvatarChange(newAvatar);
+    if (selectedFile) {
+      const localUrl = URL.createObjectURL(selectedFile);
+      onAvatarChange(localUrl);
+      setSelectedFile(null);
     }
     onClose();
   };
@@ -27,7 +36,13 @@ const UserAvatar = ({ avatarUrl, onAvatarChange }: { avatarUrl: string; onAvatar
     <>
       <Dialog.Root open={isOpen}>
         <Dialog.Trigger asChild>
-          <Avatar.Root shape="full" size="2xl" cursor="pointer" onClick={onOpen} style={{ border: '2px solid', borderColor: 'blue' }}>
+          <Avatar.Root
+            shape="full"
+            boxSize="220px" 
+            cursor="pointer"
+            onClick={onOpen}
+            style={{ border: '2px solid', borderColor: 'blue' }}
+          >
             <Avatar.Fallback name="Użytkownik" />
             <Avatar.Image src={avatarUrl} />
           </Avatar.Root>
@@ -44,14 +59,18 @@ const UserAvatar = ({ avatarUrl, onAvatarChange }: { avatarUrl: string; onAvatar
 
             <Dialog.Body>
               <Input
-                placeholder="Wklej URL nowego avatara"
-                value={newAvatar}
-                onChange={(e) => setNewAvatar(e.target.value)}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
               />
             </Dialog.Body>
 
             <Dialog.Footer>
-              <Button colorScheme="blue" onClick={handleSave}>
+              <Button
+                colorScheme="blue"
+                onClick={handleSave}
+                disabled={!selectedFile}
+              >
                 Zapisz
               </Button>
             </Dialog.Footer>
@@ -87,7 +106,7 @@ const TaskList = () => {
       <Text fontSize="lg" fontWeight="semibold" mb={2}>
         Twoje zadania:
       </Text>
-      {/* Tu możesz wczytać dane z bazy lub wstawić <TaskItem /> */}
+      {/* Tu możesz wczytać dane z bazy*/}
       <Text color="gray.500">(Brak zadań)</Text>
     </Box>
   );
@@ -96,8 +115,8 @@ const TaskList = () => {
 // Główny komponent profilu
 const ProfilePage = () => {
   const [avatarUrl, setAvatarUrl] = useState<string>('https://bit.ly/broken-link');
-  const [username, setUsername] = useState<string | undefined>(undefined); // symulacja bazy
-  const [solvedTasks, setSolvedTasks] = useState<number | undefined>(undefined); // symulacja bazy
+  const [username, setUsername] = useState<string | undefined>(undefined);
+  const [solvedTasks, setSolvedTasks] = useState<number | undefined>(undefined);
 
   return (
     <VStack p={6} align="center" w="100%" maxW="md" mx="auto">
