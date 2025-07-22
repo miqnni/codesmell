@@ -123,7 +123,7 @@ export default function Page(props: { children: React.ReactNode }) {
     rootNode: actualCollectionRootNode
   })
 
-  const [ selectedFilePath, setSelectedFilePath ] = useState("(no file path selected)")
+  const [ selectedFilePath, setSelectedFilePath ] = useState("")
 
   const [data, setData] = useState<Data>();
   const [error, setError] = useState('');
@@ -135,6 +135,10 @@ export default function Page(props: { children: React.ReactNode }) {
       setIsLoading(true);
       setIsError(false);
       try {
+        if (selectedFilePath.length === 0 || selectedFilePath[0] !== '/') {
+          setData({fileName: "", content: "(no file selected)"})
+          return;
+        }
         const res = await fetch(`http://localhost:8080/api/quiz/1/file?path=${selectedFilePath}`, { signal });
         const resJson = await res.json();
         setData(resJson);
