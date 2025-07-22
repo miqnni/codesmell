@@ -56,7 +56,8 @@ function createTreeFromFilePath(recentPath: string, remainingPath: string, paren
 }
 
 interface Data {
-  name: string
+  fileName: string,
+  content: string
 }
 
 export default function Page(props: { children: React.ReactNode }) {
@@ -98,8 +99,8 @@ export default function Page(props: { children: React.ReactNode }) {
       setIsError(false);
       try {
         const res = await fetch("http://localhost:8080/api/quiz/1/file?path=Main.java", { signal });
-        console.log(res)
         const resJson = await res.json();
+        // console.log(resJson)
         setData(resJson);
       } catch (e) {
         setIsError(true);
@@ -123,8 +124,7 @@ export default function Page(props: { children: React.ReactNode }) {
     <Flex w="100%" h="100%" direction={{base: "column", md: "row"}}>
       <Box bg="#696773" flexBasis="75%" md={{order: 1}} p={4} overflowY="auto">
         {/* TODO: Using the database, turn the selectedFilePath into file content */}
-        <CodeDisplay codeContent={"#" + selectedFilePath} />
-        <div>{isLoading ? 'Loading...' : isError ? error : data && data.name}</div>
+        <CodeDisplay codeContent={isLoading ? 'Loading...' : isError ? error : (data ? data.content : "(file not loaded)")} />
       </Box>
       <Box bg="#505073" p={4} flexBasis="25%" overflowY="auto">
         <FileTree collection={actualCollection} stateSetter={setSelectedFilePath} />
