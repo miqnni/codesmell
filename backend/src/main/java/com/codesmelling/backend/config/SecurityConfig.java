@@ -22,8 +22,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Wyłączenie CSRF dla prostoty testów
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll()
-                        //.requestMatchers("/import", "/list").permitAll()  // <-- pozwól na /import bez logowania
-                        //.anyRequest().authenticated()            // reszta endpointów wymaga autoryzacji
+                // .requestMatchers("/import", "/list").permitAll() // <-- pozwól na /import bez
+                // logowania
+                // .anyRequest().authenticated() // reszta endpointów wymaga autoryzacji
                 )
                 .formLogin(Customizer.withDefaults());
 
@@ -42,5 +43,6 @@ public class SecurityConfig {
                         .allowedHeaders("*");
             }
         };
+
     }
 }
