@@ -4,7 +4,7 @@ import { Flex, Box, TreeCollection, createTreeCollection } from "@chakra-ui/reac
 import FileTree from "@/components/features/quiz/FileTree"
 import quizJSON from "./data.json"
 import CodeDisplay from "@/components/features/quiz/CodeDisplay"
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 interface Node {
   id: string
@@ -55,6 +55,10 @@ function createTreeFromFilePath(recentPath: string, remainingPath: string, paren
   return {newNode: currNode, valid: true}
 }
 
+interface Data {
+  name: string
+}
+
 export default function Page(props: { children: React.ReactNode }) {
   const { children } = props
 
@@ -81,15 +85,49 @@ export default function Page(props: { children: React.ReactNode }) {
     rootNode: actualCollectionRootNode
   })
 
-  const [ displayedCode, setDisplayedCode ] = useState("# (no file path selected)")
+  const [ selectedFilePath, setSelectedFilePath ] = useState("(no file path selected)")
+
+  const [data, setData] = useState<Data>();
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+
+  const getData = useCallback(
+    async (signal: AbortSignal) => {
+      setIsLoading(true);
+      setIsError(false);
+      try {
+        const res = await fetch("http://localhost:8080/api/quiz/1/file?path=Main.java", { signal });
+        console.log(res)
+        const resJson = await res.json();
+        setData(resJson);
+      } catch (e) {
+        setIsError(true);
+        if (typeof e === "string") setError(e);
+        else if (e instanceof Error) setError(e.message);
+        else setError("Error");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getData(controller.signal);
+    return () => controller.abort();
+  }, [getData]);
 
   return (
     <Flex w="100%" h="100%" direction={{base: "column", md: "row"}}>
       <Box bg="#696773" flexBasis="75%" md={{order: 1}} p={4} overflowY="auto">
-        <CodeDisplay codeContent={"#" + displayedCode} />
+        {/* TODO: Using the database, turn the selectedFilePath into file content */}
+        <CodeDisplay codeContent={"#" + selectedFilePath} />
+        <div>{isLoading ? 'Loading...' : isError ? error : data && data.name}</div>
       </Box>
       <Box bg="#505073" p={4} flexBasis="25%" overflowY="auto">
-        <FileTree collection={actualCollection} stateSetter={setDisplayedCode} />
+        <FileTree collection={actualCollection} stateSetter={setSelectedFilePath} />
       </Box>
     </Flex>
   )
