@@ -1,12 +1,9 @@
 package com.codesmelling.backend.service;
 
 import com.codesmelling.backend.config.CsvFileConfigLoader;
-import com.codesmelling.backend.database.tables.AppUser;
 import com.codesmelling.backend.database.tables.Quiz;
-import com.codesmelling.backend.dto.Quiz.LanguageGroupDto;
 import com.codesmelling.backend.dto.Quiz.QuizContentDto;
 import com.codesmelling.backend.dto.Quiz.QuizListDto;
-import com.codesmelling.backend.repository.AppUserRepository;
 import com.codesmelling.backend.repository.QuizRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -17,12 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -36,32 +29,44 @@ public class QuizService {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new RuntimeException("Quiz not found"));
 
-        String quizFolder = "code/" + quiz.getQuizName();  // ścieżka w resources
-
+        String quizFolder = "code/" + quiz.getQuizName();
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
-        // Znajdź wszystkie pliki w folderze quizu (code/{quizName}/*)
-        Resource[] files = resolver.getResources("classpath:" + quizFolder + "/*");
+        // Wczytaj wszystkie pliki z folderu quizu rekurencyjnie
+        Resource[] files = resolver.getResources("classpath*:" + quizFolder + "/**/*");
 
         QuizContentDto dto = new QuizContentDto();
         List<QuizContentDto.CodeFileDto> codeFiles = new ArrayList<>();
         String errorTagsCsvContent = null;
         String solutionContent = null;
 
+
+        File anyFile = files[0].getFile();
+        File quizDir = anyFile.getParentFile();
+        while (quizDir != null && !quizDir.getName().equals(quiz.getQuizName())) {
+            quizDir = quizDir.getParentFile();
+        }
+        if (quizDir == null) {
+            throw new IOException("Cannot locate quiz base directory");
+        }
+        Path basePath = quizDir.getCanonicalFile().toPath();
+
         for (Resource file : files) {
-            String filename = file.getFilename();
-            if (filename == null) continue;
+            File actualFile = file.getFile();
+            if (!actualFile.isFile()) continue;
+
+            Path filePath = actualFile.getCanonicalFile().toPath();
+            String relativePath = basePath.relativize(filePath).toString().replace("\\", "/");
 
             String content = new String(file.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
 
-            if (filename.equalsIgnoreCase("ErrorTags.csv")) {
+            if (relativePath.equalsIgnoreCase("ErrorTags.csv")) {
                 errorTagsCsvContent = content;
-            } else if (filename.equalsIgnoreCase("Solution.txt")) {
+            } else if (relativePath.equalsIgnoreCase("Solution.txt")) {
                 solutionContent = content;
             } else {
-                // Inne pliki traktujemy jako pliki z kodem
                 QuizContentDto.CodeFileDto codeFileDto = new QuizContentDto.CodeFileDto();
-                codeFileDto.setFileName(filename);
+                codeFileDto.setFileName(relativePath);
                 codeFileDto.setContent(content);
                 codeFiles.add(codeFileDto);
             }
@@ -82,15 +87,14 @@ public class QuizService {
 
     public List<QuizListDto> getAvailableQuizzes() throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-
         Resource codeDir = resolver.getResource("classpath:code");
 
-        File baseDir = codeDir.getFile();  // Działa tylko w trybie dev / nie z JARa
+        File baseDir = codeDir.getFile();  // Działa tylko w dev (nie z JARa)
         System.out.println("Ścieżka bazowa: " + baseDir.getAbsolutePath());
 
         List<QuizListDto> result = new ArrayList<>();
-
         File[] quizFolders = baseDir.listFiles(File::isDirectory);
+
         if (quizFolders == null) {
             System.out.println("Brak folderów z quizami.");
             return result;
@@ -102,9 +106,14 @@ public class QuizService {
 
             System.out.println("Znaleziono folder quizu: " + folderName + " (ID: " + quizId + ")");
 
+            // Rekurencyjnie zbierz ścieżki do plików kodu
+            List<String> codeFilePaths = new ArrayList<>();
+            collectCodeFiles(quizDir, quizDir, codeFilePaths);
+
             QuizListDto dto = new QuizListDto();
             dto.setQuizName(folderName);
             dto.setQuizId(quizId);
+            dto.setCodeFilePaths(codeFilePaths);  // <-- dodaj to pole do QuizListDto
 
             result.add(dto);
         }
@@ -113,6 +122,23 @@ public class QuizService {
         return result;
     }
 
+    private void collectCodeFiles(File baseDir, File currentDir, List<String> result) {
+        File[] files = currentDir.listFiles();
+        if (files == null) return;
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                collectCodeFiles(baseDir, file, result);
+            } else {
+                String fileName = file.getName();
+                if (!fileName.equals("Solution.txt") && !fileName.equals("ErrorTags.csv")) {
+                    // Ścieżka względna względem folderu quizu
+                    Path relativePath = baseDir.toPath().relativize(file.toPath());
+                    result.add(relativePath.toString().replace(File.separatorChar, '/'));
+                }
+            }
+        }
+    }
 
     private Long extractQuizId(String folderName) {
         return quizRepository.findByQuizName(folderName)
