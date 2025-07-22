@@ -2,6 +2,7 @@ package com.codesmelling.backend.controller;
 
 import com.codesmelling.backend.dto.FileContentDto;
 import com.codesmelling.backend.dto.Quiz.QuizContentDto;
+import com.codesmelling.backend.dto.Quiz.QuizFilesDto;
 import com.codesmelling.backend.dto.Quiz.QuizListDto;
 import com.codesmelling.backend.service.QuizService;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +21,23 @@ public class QuizController {
     private final QuizService quizService;
 
     @GetMapping("/list")
-    public ResponseEntity<List<QuizListDto>> listAllQuizzes() {
+    public ResponseEntity<List<QuizFilesDto>> listAllQuizzes() {
         try {
-            List<QuizListDto> result = quizService.getAvailableQuizzes();
+            List<QuizFilesDto> result = quizService.getAvailableQuizzes();
             System.out.println(result);
             return ResponseEntity.ok(result);
         } catch (IOException e) {
             System.out.println("listowanie nie powiodło się");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/short-list")
+    public ResponseEntity<List<QuizListDto>> listQuizNamesAndIds() {
+        try {
+            List<QuizListDto> result = quizService.getQuizShortList();
+            return ResponseEntity.ok(result);
+        } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -46,9 +57,9 @@ public class QuizController {
     }
 
     @GetMapping("/{quizId}/info")
-    public ResponseEntity<QuizListDto> getQuizInfo(@PathVariable Long quizId) {
+    public ResponseEntity<QuizFilesDto> getQuizInfo(@PathVariable Long quizId) {
         try {
-            QuizListDto dto = quizService.getQuizById(quizId);
+            QuizFilesDto dto = quizService.getQuizById(quizId);
             return ResponseEntity.ok(dto);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
