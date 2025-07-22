@@ -11,8 +11,9 @@ const museoModerno = MuseoModerno({subsets: ["latin"]})
 export default function Page() {
   return (
     <>
-      {/* TODO: Get rid of the hard-coded margin */}
-      <Confetti total={30} style={{marginTop: "64px"}} Component={[
+      {/* TODO: Get rid of the hard-coded margin
+      (some global CSS veriable equal to 4rem / 16 ChakraUI tokens ?) */}
+      <Confetti total={30} style={{marginTop: "4rem"}} Component={[
         <Rectangle color="#EFF1F3" />,
         <Circle color="#FED766" />,
         <Triangle color="#009FB7" />,
