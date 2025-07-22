@@ -1,7 +1,8 @@
-import { Highlight, themes } from "prism-react-renderer";
 import { Code } from "@chakra-ui/react";
 
-import quizJSON from "@/app/exercises/(exercise)/sample-quiz/data.json"
+import hljs, { Language } from 'highlight.js';
+import 'highlight.js/styles/github-dark.css';
+
 
 // const codeBlock = `
 // const GroceryItem: React.FC<GroceryItemProps> = ({ item }) => {
@@ -15,36 +16,29 @@ import quizJSON from "@/app/exercises/(exercise)/sample-quiz/data.json"
 // }
 // `
 
-const codeBlock = quizJSON[1].content
-
-export default function CodeDisplay(props: {codeContent: string}) {
-  const { codeContent } = props
+export default function CodeDisplay(props: {codeContent: string, filePath: string}) {
+  const { codeContent, filePath } = props
   let keyIdx = 0;
+
+  const dotIdx: number = filePath.lastIndexOf(".")
+  const fileExtension: string = dotIdx !== -1 ?
+    (dotIdx !== filePath.length - 1 ? filePath.substring(dotIdx + 1).toLowerCase() : "txt")
+    : "txt";
+  const languageObj: Language | undefined = hljs.getLanguage(fileExtension)
+  const languageToken: string = languageObj ? (languageObj.aliases && languageObj.aliases.length > 0 ? languageObj.aliases[0].toLowerCase() : "txt") : "txt";
+
   return (
-    <Highlight
-      language="kotlin"
-      code={codeContent}
-      theme={themes.okaidia}
-    >
-    {({ style, tokens, getLineProps, getTokenProps }) => (
     <Code
       padding={2}
       rounded="md"
       key={keyIdx++}
       display="block"
       whiteSpace="pre"
-      backgroundColor={style.backgroundColor}
+      backgroundColor="#272727"
+      fontSize="md"
+      lineHeight={1.75}
       overflow="auto"
-    >
-      {tokens.map((line, i) => (
-        <div key={i} {...getLineProps({ line })}>
-          {line.map((token, key) => (
-            <span key={key} {...getTokenProps({ token })} />
-          ))}
-        </div>
-      ))}
-    </Code>
-  )}
-    </Highlight>
+      dangerouslySetInnerHTML={{__html: hljs.highlight(codeContent, {language: languageToken}).value}}
+    />
   );
 }

@@ -17,9 +17,11 @@ export default function FileTree(props : { collection: TreeCollection<Node>, sta
 
   // const [fileContent, setFileContent] = useState("(no file selected)")
   
+  const nodeNameFontSize: string | number = "lg";
+
   return (
-    <TreeView.Root collection={collection} maxW="sm">
-      <TreeView.Label>Tree</TreeView.Label>
+    <TreeView.Root collection={collection}>
+      <TreeView.Label fontSize={nodeNameFontSize} pb={2} borderBottom="1px solid #EFF1F3">Quiz Name</TreeView.Label>
       <TreeView.Tree>
         <TreeView.Node
           indentGuide={<TreeView.BranchIndentGuide />}
@@ -27,12 +29,12 @@ export default function FileTree(props : { collection: TreeCollection<Node>, sta
             nodeState.isBranch ? (
               <TreeView.BranchControl>
                 <LuFolder />
-                <TreeView.BranchText>{node.name}</TreeView.BranchText>
+                <TreeView.BranchText fontSize={nodeNameFontSize}>{node.name}</TreeView.BranchText>
               </TreeView.BranchControl>
             ) : (
               <TreeView.Item onClick={() => stateSetter(node.id)}>
                 <LuFile />
-                <TreeView.ItemText>{node.name}</TreeView.ItemText>
+                <TreeView.ItemText fontSize={nodeNameFontSize}>{node.name}</TreeView.ItemText>
               </TreeView.Item>
             )
           }
