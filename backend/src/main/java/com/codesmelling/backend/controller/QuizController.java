@@ -45,6 +45,15 @@ public class QuizController {
         }
     }
 
+    @GetMapping("/{quizId}/info")
+    public ResponseEntity<QuizListDto> getQuizInfo(@PathVariable Long quizId) {
+        try {
+            QuizListDto dto = quizService.getQuizById(quizId);
+            return ResponseEntity.ok(dto);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
 //    @GetMapping("/content")
 //    public ResponseEntity<QuizContentDto> getQuizContent() {
 //        long quizId = 1;

@@ -125,6 +125,34 @@ public class QuizService {
         return result;
     }
 
+    public QuizListDto getQuizById(Long quizId) throws IOException {
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        Resource codeDir = resolver.getResource("classpath:code");
+
+        File baseDir = codeDir.getFile();  // Tylko w dev
+        File[] quizFolders = baseDir.listFiles(File::isDirectory);
+
+        if (quizFolders == null) {
+            throw new FileNotFoundException("Brak folderów z quizami");
+        }
+
+        for (File quizDir : quizFolders) {
+            Long foundId = extractQuizId(quizDir.getName());
+            if (Objects.equals(foundId, quizId)) {
+                List<String> codeFilePaths = new ArrayList<>();
+                collectCodeFiles(quizDir, quizDir, codeFilePaths);
+
+                QuizListDto dto = new QuizListDto();
+                dto.setQuizId(quizId);
+                dto.setQuizName(quizDir.getName());
+                dto.setCodeFilePaths(codeFilePaths);  // upewnij się, że masz takie pole w DTO
+                return dto;
+            }
+        }
+
+        throw new FileNotFoundException("Nie znaleziono quizu o ID: " + quizId);
+    }
+
     private void collectCodeFiles(File baseDir, File currentDir, List<String> result) {
         File[] files = currentDir.listFiles();
         if (files == null) return;
