@@ -2,6 +2,7 @@ package com.codesmelling.backend.service;
 
 import com.codesmelling.backend.config.CsvFileConfigLoader;
 import com.codesmelling.backend.database.tables.AppUser;
+import com.codesmelling.backend.dto.User.RegisterUserDto;
 import com.codesmelling.backend.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,18 +28,24 @@ public class AppUserService {
         userRepository.saveAll(users);
     }
 
-    public AppUser createStudentPiwoUser() {
-        if (userRepository.findByUsername("StudentPiwo").isPresent()) {
-            throw new RuntimeException("Użytkownik StudentPiwo już istnieje.");
+    public AppUser registerNewUser(RegisterUserDto dto) {
+        if (userRepository.existsByUsername(dto.getUsername())) {
+            throw new IllegalArgumentException("Username already taken");
+        }
+
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new IllegalArgumentException("Email already taken");
         }
 
         AppUser user = AppUser.builder()
-                .username("StudentPiwo")
-                .password("haslopiwo")
-                .email("student@piwo.pl")
+                .username(dto.getUsername())
+                .email(dto.getEmail())
+                //.password(passwordEncoder.encode(dto.getPassword()))
+                .password(dto.getPassword())
                 .role("ROLE_USER")
                 .build();
 
         return userRepository.save(user);
     }
+
 }
