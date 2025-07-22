@@ -2,7 +2,6 @@
 
 import { Flex, Box, TreeCollection, createTreeCollection } from "@chakra-ui/react"
 import FileTree from "@/components/features/quiz/FileTree"
-import quizJSON from "./data.json"
 import CodeDisplay from "@/components/features/quiz/CodeDisplay"
 import { useCallback, useEffect, useState } from "react"
 
@@ -10,6 +9,12 @@ interface Node {
   id: string
   name: string
   children?: Node[]
+}
+
+interface Tree {
+  quizName: string,
+  quizId: Number,
+  codeFilePaths: string[],
 }
 
 // ASSUMPTION: recentPath ends with "/", parentNode has ID equal to recentPath
@@ -63,6 +68,37 @@ interface Data {
 export default function Page(props: { children: React.ReactNode }) {
   const { children } = props
 
+  const [treeData, setTreeData] = useState<Tree>();
+  const [tError, setTError] = useState('');
+  const [isTLoading, setIsTLoading] = useState(false);
+  const [isTError, setIsTError] = useState(false);
+
+  const getTreeData = useCallback(
+    async (signal: AbortSignal) => {
+      setIsTLoading(true);
+      setIsTError(false);
+      try {
+        const res = await fetch("http://localhost:8080/api/quiz/1/info", { signal });
+        const resJson = await res.json();
+        setTreeData(resJson);
+      } catch (e) {
+        setIsTError(true);
+        if (typeof e === "string") setTError(e);
+        else if (e instanceof Error) setTError(e.message);
+        else setTError("Error");
+      } finally {
+        setIsTLoading(false);
+      }
+    },
+    []
+  );
+  
+  useEffect(() => {
+    const controller = new AbortController();
+    getTreeData(controller.signal);
+    return () => controller.abort();
+  }, [getTreeData]);
+
   // Create a root node of the file tree
   const actualCollectionRootNode: Node = {
     id: "/",
@@ -71,14 +107,15 @@ export default function Page(props: { children: React.ReactNode }) {
   }
 
   // Add children to the root node using the function `createTreeFromFilePath`
-  for (const file of quizJSON) {
-    if (actualCollectionRootNode.children){
-      const {newNode, valid} = createTreeFromFilePath("/", file.path, actualCollectionRootNode);
-      if (valid)
-        actualCollectionRootNode.children.push(newNode)
+  if (treeData){
+    for (const file of treeData.codeFilePaths) {
+      if (actualCollectionRootNode.children){
+        const {newNode, valid} = createTreeFromFilePath("/", file, actualCollectionRootNode);
+        if (valid)
+          actualCollectionRootNode.children.push(newNode)
+      }
     }
   }
-
   // Prepare the TreeCollection with the completed root node
   const actualCollection: TreeCollection<Node> = createTreeCollection<Node>({
     nodeToValue: (node) => node.id,
@@ -98,9 +135,8 @@ export default function Page(props: { children: React.ReactNode }) {
       setIsLoading(true);
       setIsError(false);
       try {
-        const res = await fetch("http://localhost:8080/api/quiz/1/file?path=Main.java", { signal });
+        const res = await fetch(`http://localhost:8080/api/quiz/1/file?path=${selectedFilePath}`, { signal });
         const resJson = await res.json();
-        // console.log(resJson)
         setData(resJson);
       } catch (e) {
         setIsError(true);
@@ -111,7 +147,7 @@ export default function Page(props: { children: React.ReactNode }) {
         setIsLoading(false);
       }
     },
-    []
+    [selectedFilePath]
   );
 
   useEffect(() => {
