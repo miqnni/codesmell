@@ -147,7 +147,7 @@ export default function Page(props: { children: React.ReactNode }) {
         setIsLoading(false);
       }
     },
-    []
+    [selectedFilePath]
   );
 
   useEffect(() => {
