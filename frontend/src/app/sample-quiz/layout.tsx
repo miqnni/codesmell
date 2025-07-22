@@ -50,25 +50,35 @@ interface Node {
 // })
 
 // ASSUMPTION: recentPath ends with "/", parentNode has ID equal to recentPath
-function createTreeFromFilePath(recentPath: string, remainingPath: string, parentNode: Node): Node {
-  const clone = structuredClone(parentNode)
-  console.log({recentPath, remainingPath, clone})
-  
+function createTreeFromFilePath(recentPath: string, remainingPath: string, parentNode: Node): {newNode: Node, valid: boolean} {
   const sepIdx = remainingPath.indexOf("/")
   const isDir = sepIdx !== -1
   const currName = isDir ? remainingPath.slice(0, sepIdx) + "/" : remainingPath
   const currId = recentPath + currName
 
+  //console.log(structuredClone({currId, parentNode}))
 
-  if (parentNode.children !== undefined && parentNode.children.length > 0) {
+  // Check if the new path does not already exist in the file tree
+  if (parentNode.children !== undefined) {
     for (let child of parentNode.children) {
-      if (child.id === currId) {
-        console.log("The child " + currId + " exists!")
-        return createTreeFromFilePath(currId, remainingPath.slice(sepIdx + 1), child);
+      if (child.id === currId){
+        if (isDir) {
+          const nextRemainingPath = remainingPath.slice(sepIdx + 1);
+
+          // If the array `child.children` exists (== true), then there is no change
+          // (assign `child.children` to `child.children`).
+          // Otherwise, assign an empty array to it.
+          child.children = child.children || [];
+          const {newNode, valid} = createTreeFromFilePath(currId, nextRemainingPath, child)
+          if (valid)
+            child.children.push(newNode);
+        }
+        return {newNode: {id: "", name: ""}, valid: false};
       }
     }
   }
   
+
   const currNode: Node = {
     id: currId,
     name: currName
@@ -76,16 +86,9 @@ function createTreeFromFilePath(recentPath: string, remainingPath: string, paren
 
   if (isDir) {
     const nextRemainingPath = remainingPath.slice(sepIdx + 1)
-    if (currNode.children !== undefined){
-      console.log("Pushing...")
-      currNode.children.push(createTreeFromFilePath(currId, nextRemainingPath, currNode))
-    } else {
-      console.log("Replacing...")
-      currNode.children = [ createTreeFromFilePath(currId, nextRemainingPath, currNode) ]
-    }
+    currNode.children = [ createTreeFromFilePath(currId, nextRemainingPath, currNode).newNode ]
   }
-
-  return currNode
+  return {newNode: currNode, valid: true}
 }
 
 export default function Layout(props: { children: React.ReactNode }) {
@@ -98,13 +101,14 @@ export default function Layout(props: { children: React.ReactNode }) {
   }
 
   for (const file of quizJSON) {
-    if (actualCollectionRootNode.children)
-      actualCollectionRootNode.children.push(createTreeFromFilePath("/", file.path, actualCollectionRootNode))
+    if (actualCollectionRootNode.children){
+      const {newNode, valid} = createTreeFromFilePath("/", file.path, actualCollectionRootNode);
+      if (valid)
+        actualCollectionRootNode.children.push(newNode)
+    }
   }
 
   // actualCollectionRootNode.children = quizJSON.map(file => createTreeFromFilePath("/", file.path, actualCollectionRootNode))
-
-  console.log(actualCollectionRootNode)
 
   const actualCollection: TreeCollection<Node> = createTreeCollection<Node>({
     nodeToValue: (node) => node.id,
