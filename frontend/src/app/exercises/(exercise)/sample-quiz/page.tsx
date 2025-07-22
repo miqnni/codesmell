@@ -2,7 +2,9 @@
 
 import { Flex, Box, TreeCollection, createTreeCollection } from "@chakra-ui/react"
 import FileTree from "@/components/features/quiz/FileTree"
-import quizJSON from "./sample-quiz/data.json"
+import quizJSON from "./data.json"
+import CodeDisplay from "@/components/features/quiz/CodeDisplay"
+import { useState } from "react"
 
 interface Node {
   id: string
@@ -12,12 +14,14 @@ interface Node {
 
 // ASSUMPTION: recentPath ends with "/", parentNode has ID equal to recentPath
 function createTreeFromFilePath(recentPath: string, remainingPath: string, parentNode: Node): {newNode: Node, valid: boolean} {
+  if (recentPath[recentPath.length - 1] !== "/" || recentPath !== parentNode.id)
+    throw new Error("ASSUMPTION: recentPath (" + recentPath + ") ends with \"/\", parentNode has ID (" + parentNode.id + ") equal to recentPath")
+
+
   const sepIdx = remainingPath.indexOf("/")
   const isDir = sepIdx !== -1
   const currName = isDir ? remainingPath.slice(0, sepIdx) + "/" : remainingPath
   const currId = recentPath + currName
-
-  //console.log(structuredClone({currId, parentNode}))
 
   // Check if the new path does not already exist in the file tree
   if (parentNode.children !== undefined) {
@@ -39,7 +43,6 @@ function createTreeFromFilePath(recentPath: string, remainingPath: string, paren
     }
   }
   
-
   const currNode: Node = {
     id: currId,
     name: currName
@@ -52,15 +55,17 @@ function createTreeFromFilePath(recentPath: string, remainingPath: string, paren
   return {newNode: currNode, valid: true}
 }
 
-export default function Layout(props: { children: React.ReactNode }) {
+export default function Page(props: { children: React.ReactNode }) {
   const { children } = props
 
+  // Create a root node of the file tree
   const actualCollectionRootNode: Node = {
     id: "/",
     name: "",
     children: [],
   }
 
+  // Add children to the root node using the function `createTreeFromFilePath`
   for (const file of quizJSON) {
     if (actualCollectionRootNode.children){
       const {newNode, valid} = createTreeFromFilePath("/", file.path, actualCollectionRootNode);
@@ -69,22 +74,22 @@ export default function Layout(props: { children: React.ReactNode }) {
     }
   }
 
+  // Prepare the TreeCollection with the completed root node
   const actualCollection: TreeCollection<Node> = createTreeCollection<Node>({
     nodeToValue: (node) => node.id,
     nodeToString: (node) => node.name,
     rootNode: actualCollectionRootNode
   })
 
+  const [ displayedCode, setDisplayedCode ] = useState("# (no file path selected)")
+
   return (
     <Flex w="100%" h="100%" direction={{base: "column", md: "row"}}>
       <Box bg="#696773" flexBasis="75%" md={{order: 1}} p={4} overflowY="auto">
-        {/* <Box bg="linear-gradient(#e66465, #9198e5)" h="190dvh">Code</Box> */}
-        { children }
+        <CodeDisplay codeContent={"#" + displayedCode} />
       </Box>
       <Box bg="#505073" p={4} flexBasis="25%" overflowY="auto">
-        <FileTree collection={actualCollection} />
-        {/* <Box bg="linear-gradient(#e66465, #9198e5)" h="190dvh">Code</Box> */}
-
+        <FileTree collection={actualCollection} stateSetter={setDisplayedCode} />
       </Box>
     </Flex>
   )
