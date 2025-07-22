@@ -3,6 +3,8 @@ package com.codesmelling.backend.service;
 import com.codesmelling.backend.config.CsvFileConfigLoader;
 import com.codesmelling.backend.database.tables.Quiz;
 import com.codesmelling.backend.dto.Quiz.QuizContentDto;
+import com.codesmelling.backend.dto.Quiz.QuizDto;
+import com.codesmelling.backend.dto.Quiz.QuizFilesDto;
 import com.codesmelling.backend.dto.Quiz.QuizListDto;
 import com.codesmelling.backend.repository.QuizRepository;
 import lombok.RequiredArgsConstructor;
@@ -82,20 +84,41 @@ public class QuizService {
         return dto;
     }
 
+    public List<QuizListDto> getQuizShortList() throws IOException {
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        Resource codeDir = resolver.getResource("classpath:code");
+
+        File baseDir = codeDir.getFile();  // Działa tylko lokalnie
+        File[] quizFolders = baseDir.listFiles(File::isDirectory);
+
+        List<QuizListDto> result = new ArrayList<>();
+        if (quizFolders == null) return result;
+
+        for (File quizDir : quizFolders) {
+            String folderName = quizDir.getName();
+            Long quizId = extractQuizId(folderName);
+            if (quizId != null) {
+                result.add(new QuizListDto(quizId, folderName));
+            }
+        }
+
+        return result;
+    }
+
     public void importQuizzes() throws IOException {
         InputStream in = loader.load("Quizzes.csv");
         List<Quiz> quizzes = parser.parse(Quiz.class, in);
         quizRepository.saveAll(quizzes);
     }
 
-    public List<QuizListDto> getAvailableQuizzes() throws IOException {
+    public List<QuizFilesDto> getAvailableQuizzes() throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource codeDir = resolver.getResource("classpath:code");
 
         File baseDir = codeDir.getFile();  // Działa tylko w dev (nie z JARa)
         System.out.println("Ścieżka bazowa: " + baseDir.getAbsolutePath());
 
-        List<QuizListDto> result = new ArrayList<>();
+        List<QuizFilesDto> result = new ArrayList<>();
         File[] quizFolders = baseDir.listFiles(File::isDirectory);
 
         if (quizFolders == null) {
@@ -113,7 +136,7 @@ public class QuizService {
             List<String> codeFilePaths = new ArrayList<>();
             collectCodeFiles(quizDir, quizDir, codeFilePaths);
 
-            QuizListDto dto = new QuizListDto();
+            QuizFilesDto dto = new QuizFilesDto();
             dto.setQuizName(folderName);
             dto.setQuizId(quizId);
             dto.setCodeFilePaths(codeFilePaths);  // <-- dodaj to pole do QuizListDto
@@ -125,7 +148,7 @@ public class QuizService {
         return result;
     }
 
-    public QuizListDto getQuizById(Long quizId) throws IOException {
+    public QuizFilesDto getQuizById(Long quizId) throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource codeDir = resolver.getResource("classpath:code");
 
@@ -142,7 +165,7 @@ public class QuizService {
                 List<String> codeFilePaths = new ArrayList<>();
                 collectCodeFiles(quizDir, quizDir, codeFilePaths);
 
-                QuizListDto dto = new QuizListDto();
+                QuizFilesDto dto = new QuizFilesDto();
                 dto.setQuizId(quizId);
                 dto.setQuizName(quizDir.getName());
                 dto.setCodeFilePaths(codeFilePaths);  // upewnij się, że masz takie pole w DTO
