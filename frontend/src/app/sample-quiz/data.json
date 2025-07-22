@@ -1,7 +1,7 @@
 [
     {
         "path": "hello.py",
-        "content": "user = input(\"Your name:\")\nprint(\"Hello, \" + user)"
+        "content": "user = input(\"Your name(\"Your name:\")\nprint(\"Hello, \" + user)"
     },
     {
         "path": "utils/add.py",
@@ -9,6 +9,14 @@
     },
     {
         "path": "utils/subtract.py",
+        "content": "def subtract(a, b):\n\treturn a - b"
+    },
+    {
+        "path": "utils/advacned/power.py",
+        "content": "def subtract(a, b):\n\treturn a - b"
+    },
+    {
+        "path": "utils/advacned/sqrt.py",
         "content": "def subtract(a, b):\n\treturn a - b"
     }
 ]

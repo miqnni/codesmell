@@ -49,13 +49,26 @@ interface Node {
 //   },
 // })
 
-// ASSUMPTION: recentPath ends with "/"
-function createTreeFromFilePath(recentPath: string, remainingPath: string): Node {
+// ASSUMPTION: recentPath ends with "/", parentNode has ID equal to recentPath
+function createTreeFromFilePath(recentPath: string, remainingPath: string, parentNode: Node): Node {
+  const clone = structuredClone(parentNode)
+  console.log({recentPath, remainingPath, clone})
+  
   const sepIdx = remainingPath.indexOf("/")
   const isDir = sepIdx !== -1
   const currName = isDir ? remainingPath.slice(0, sepIdx) + "/" : remainingPath
   const currId = recentPath + currName
 
+
+  if (parentNode.children !== undefined && parentNode.children.length > 0) {
+    for (let child of parentNode.children) {
+      if (child.id === currId) {
+        console.log("The child " + currId + " exists!")
+        return createTreeFromFilePath(currId, remainingPath.slice(sepIdx + 1), child);
+      }
+    }
+  }
+  
   const currNode: Node = {
     id: currId,
     name: currName
@@ -63,23 +76,40 @@ function createTreeFromFilePath(recentPath: string, remainingPath: string): Node
 
   if (isDir) {
     const nextRemainingPath = remainingPath.slice(sepIdx + 1)
-    currNode.children = [ createTreeFromFilePath(currId, nextRemainingPath) ]
+    if (currNode.children !== undefined){
+      console.log("Pushing...")
+      currNode.children.push(createTreeFromFilePath(currId, nextRemainingPath, currNode))
+    } else {
+      console.log("Replacing...")
+      currNode.children = [ createTreeFromFilePath(currId, nextRemainingPath, currNode) ]
+    }
   }
+
   return currNode
 }
 
 export default function Layout(props: { children: React.ReactNode }) {
   const { children } = props
 
+  const actualCollectionRootNode: Node = {
+    id: "/",
+    name: "",
+    children: [],
+  }
+
+  for (const file of quizJSON) {
+    if (actualCollectionRootNode.children)
+      actualCollectionRootNode.children.push(createTreeFromFilePath("/", file.path, actualCollectionRootNode))
+  }
+
+  // actualCollectionRootNode.children = quizJSON.map(file => createTreeFromFilePath("/", file.path, actualCollectionRootNode))
+
+  console.log(actualCollectionRootNode)
+
   const actualCollection: TreeCollection<Node> = createTreeCollection<Node>({
     nodeToValue: (node) => node.id,
     nodeToString: (node) => node.name,
-    rootNode: {
-      id: "/",
-      name: "",
-      // children: [createTreeFromFilePath("/", "a/b/c/d/w.py")]
-      children: [ createTreeFromFilePath("/", quizJSON[2].path) ]
-    }
+    rootNode: actualCollectionRootNode
   })
 
   // console.log(createTreeFromFilePath("/", "a/b/c/d/w.py"))
