@@ -6,9 +6,12 @@ import com.codesmelling.backend.dto.Quiz.QuizContentDto;
 import com.codesmelling.backend.dto.Quiz.QuizListDto;
 import com.codesmelling.backend.repository.QuizRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
+
+import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 
 import java.io.File;
@@ -139,6 +142,24 @@ public class QuizService {
             }
         }
     }
+
+    public String getFileContentInQuiz(Long quizId, String relativePath) throws IOException {
+        Quiz quiz = quizRepository.findById(quizId)
+                .orElseThrow(() -> new RuntimeException("Quiz not found"));
+
+        String basePath = "code/" + quiz.getQuizName(); // np. "code/quiz1"
+        String fullPath = basePath + "/" + relativePath; // np. "code/quiz1/Client/client.py"
+
+        // Wyszukaj plik w resources (uwzględnia podfoldery)
+        Resource resource = new ClassPathResource(fullPath);
+
+        if (!resource.exists()) {
+            throw new FileNotFoundException("File not found: " + fullPath);
+        }
+
+        return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+    }
+
 
     private Long extractQuizId(String folderName) {
         return quizRepository.findByQuizName(folderName)

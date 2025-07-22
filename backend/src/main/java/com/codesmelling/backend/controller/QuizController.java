@@ -1,14 +1,13 @@
 package com.codesmelling.backend.controller;
 
+import com.codesmelling.backend.dto.FileContentDto;
 import com.codesmelling.backend.dto.Quiz.QuizContentDto;
 import com.codesmelling.backend.dto.Quiz.QuizListDto;
 import com.codesmelling.backend.service.QuizService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,31 +31,46 @@ public class QuizController {
         }
     }
 
-    @GetMapping("/content")
-    public ResponseEntity<QuizContentDto> getQuizContent() {
-        long quizId = 1;
+    @GetMapping("/{quizId}/file")
+    public ResponseEntity<FileContentDto> getQuizFileContent(
+            @PathVariable Long quizId,
+            @RequestParam String path) {
         try {
-            QuizContentDto content = quizService.getQuizContent(quizId);
-            System.out.println(content);
-            return ResponseEntity.ok(content);
+            System.out.println(path);
+            String content = quizService.getFileContentInQuiz(quizId, path);
+            FileContentDto dto = new FileContentDto(path, content);
+            return ResponseEntity.ok(dto);
         } catch (IOException e) {
-            System.out.println("Zdobywanie zawartosci quizu nie powidoło sie");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
-    // tego użyć jak będzie frontend - na froncie wysyłamy z zapytaniem quizId
 //    @GetMapping("/content")
-//    public ResponseEntity<QuizContentDto> getQuizContent(@RequestParam Long quizId) {
+//    public ResponseEntity<QuizContentDto> getQuizContent() {
+//        long quizId = 1;
 //        try {
 //            QuizContentDto content = quizService.getQuizContent(quizId);
+//            System.out.println(content);
 //            return ResponseEntity.ok(content);
 //        } catch (IOException e) {
-//            e.printStackTrace();
+//            System.out.println("Zdobywanie zawartosci quizu nie powidoło sie");
 //            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 //        }
 //    }
+
+    // tego użyć jak będzie frontend - na froncie wysyłamy z zapytaniem quizId
+    @GetMapping("/content")
+    public ResponseEntity<QuizContentDto> getQuizContent(@RequestParam Long quizId) {
+        try {
+            QuizContentDto content = quizService.getQuizContent(quizId);
+               System.out.println(content);
+            return ResponseEntity.ok(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
 
 }
