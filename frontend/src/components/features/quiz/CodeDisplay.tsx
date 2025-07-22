@@ -22,7 +22,7 @@ export default function CodeDisplay(props: {codeContent: string}) {
   let keyIdx = 0;
   return (
     <Highlight
-      language="py"
+      language="kotlin"
       code={codeContent}
       theme={themes.okaidia}
     >
