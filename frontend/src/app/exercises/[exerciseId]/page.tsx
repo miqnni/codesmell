@@ -1,10 +1,11 @@
 "use client"
 
-import { Flex, Box, TreeCollection, createTreeCollection } from "@chakra-ui/react"
+import { Flex, Box, TreeCollection, createTreeCollection, Text, Button } from "@chakra-ui/react"
 import FileTree from "@/components/features/quiz/FileTree"
 import CodeDisplay from "@/components/features/quiz/CodeDisplay"
 import { useCallback, useEffect, useState } from "react"
 import { useParams } from "next/navigation"
+import LineHighlight from "@/interfaces/LineHighlight"
 
 interface Node {
   id: string
@@ -22,6 +23,7 @@ interface Data {
   fileName: string,
   content: string
 }
+
 
 // ASSUMPTION: recentPath ends with "/", parentNode has ID equal to recentPath
 function createTreeFromFilePath(recentPath: string, remainingPath: string, parentNode: Node): { newNode: Node, valid: boolean } {
@@ -145,7 +147,6 @@ export default function Page(props: { children: React.ReactNode }) {
           setData({ fileName: "", content: "(no file selected)" })
           return;
         }
-        console.log(numericexerciseId)
         const res = await fetch(`http://localhost:8080/api/quiz/${numericexerciseId}/file?path=${selectedFilePath}`, { signal });
         const resJson = await res.json();
         setData(resJson);
@@ -167,15 +168,25 @@ export default function Page(props: { children: React.ReactNode }) {
     return () => controller.abort();
   }, [getData]);
 
-
+  const emptyLineHighlightArray: LineHighlight[] = []
+  const [userAnswer, setUserAnswer] = useState(emptyLineHighlightArray)
 
   return (
-    <Flex w="100%" h="100%" direction={{ base: "column", md: "row" }}>
+    <Flex w="100%" minH="85dvh" h="100%" direction={{ base: "column", md: "row" }}>
       <Box bg="#696773" flexBasis="75%" md={{ order: 1 }} p={4} overflowY="auto">
-        <CodeDisplay codeContent={isLoading ? 'Loading...' : isError ? error : (data ? data.content : "(file not loaded)")} filePath={selectedFilePath} />
+        <CodeDisplay
+          codeContent={isLoading ? 'Loading...' : isError ? error : (data ? data.content : "(file not loaded)")}
+          filePath={selectedFilePath}
+          currentUserAnswer={userAnswer}
+          userAnswerSetter={setUserAnswer}
+        />
+        <Button onClick={() => { console.log(userAnswer) }}> <Text>Console log user answer</Text> </Button>
       </Box>
       <Box bg="#505073" p={4} flexBasis="25%" overflowY="auto">
-        <FileTree collection={actualCollection} stateSetter={setSelectedFilePath} />
+        <FileTree
+          collection={actualCollection}
+          stateSetter={setSelectedFilePath}
+        />
       </Box>
     </Flex>
   )
