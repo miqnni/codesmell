@@ -4,6 +4,7 @@ import { Flex, Box, TreeCollection, createTreeCollection } from "@chakra-ui/reac
 import FileTree from "@/components/features/quiz/FileTree"
 import CodeDisplay from "@/components/features/quiz/CodeDisplay"
 import { useCallback, useEffect, useState } from "react"
+import { useParams } from "next/navigation"
 
 interface Node {
   id: string
@@ -18,7 +19,7 @@ interface Tree {
 }
 
 // ASSUMPTION: recentPath ends with "/", parentNode has ID equal to recentPath
-function createTreeFromFilePath(recentPath: string, remainingPath: string, parentNode: Node): {newNode: Node, valid: boolean} {
+function createTreeFromFilePath(recentPath: string, remainingPath: string, parentNode: Node): { newNode: Node, valid: boolean } {
   if (recentPath[recentPath.length - 1] !== "/" || recentPath !== parentNode.id)
     throw new Error("ASSUMPTION: recentPath (" + recentPath + ") ends with \"/\", parentNode has ID (" + parentNode.id + ") equal to recentPath")
 
@@ -31,7 +32,7 @@ function createTreeFromFilePath(recentPath: string, remainingPath: string, paren
   // Check if the new path does not already exist in the file tree
   if (parentNode.children !== undefined) {
     for (let child of parentNode.children) {
-      if (child.id === currId){
+      if (child.id === currId) {
         if (isDir) {
           const nextRemainingPath = remainingPath.slice(sepIdx + 1);
 
@@ -39,15 +40,15 @@ function createTreeFromFilePath(recentPath: string, remainingPath: string, paren
           // (assign `child.children` to `child.children`).
           // Otherwise, assign an empty array to it.
           child.children = child.children || [];
-          const {newNode, valid} = createTreeFromFilePath(currId, nextRemainingPath, child)
+          const { newNode, valid } = createTreeFromFilePath(currId, nextRemainingPath, child)
           if (valid)
             child.children.push(newNode);
         }
-        return {newNode: {id: "", name: ""}, valid: false};
+        return { newNode: { id: "", name: "" }, valid: false };
       }
     }
   }
-  
+
   const currNode: Node = {
     id: currId,
     name: currName
@@ -55,9 +56,9 @@ function createTreeFromFilePath(recentPath: string, remainingPath: string, paren
 
   if (isDir) {
     const nextRemainingPath = remainingPath.slice(sepIdx + 1)
-    currNode.children = [ createTreeFromFilePath(currId, nextRemainingPath, currNode).newNode ]
+    currNode.children = [createTreeFromFilePath(currId, nextRemainingPath, currNode).newNode]
   }
-  return {newNode: currNode, valid: true}
+  return { newNode: currNode, valid: true }
 }
 
 interface Data {
@@ -66,6 +67,9 @@ interface Data {
 }
 
 export default function Page(props: { children: React.ReactNode }) {
+  const { exerciseId } = useParams<{ exerciseId: string }>()
+  const numericexerciseId = Number(exerciseId)
+
   const { children } = props
 
   const [treeData, setTreeData] = useState<Tree>();
@@ -78,7 +82,7 @@ export default function Page(props: { children: React.ReactNode }) {
       setIsTLoading(true);
       setIsTError(false);
       try {
-        const res = await fetch("http://localhost:8080/api/quiz/1/info", { signal });
+        const res = await fetch(`http://localhost:8080/api/quiz/${numericexerciseId}/info`, { signal });
         const resJson = await res.json();
         setTreeData(resJson);
       } catch (e) {
@@ -92,7 +96,7 @@ export default function Page(props: { children: React.ReactNode }) {
     },
     []
   );
-  
+
   useEffect(() => {
     const controller = new AbortController();
     getTreeData(controller.signal);
@@ -107,10 +111,10 @@ export default function Page(props: { children: React.ReactNode }) {
   }
 
   // Add children to the root node using the function `createTreeFromFilePath`
-  if (treeData){
+  if (treeData) {
     for (const file of treeData.codeFilePaths) {
-      if (actualCollectionRootNode.children){
-        const {newNode, valid} = createTreeFromFilePath("/", file, actualCollectionRootNode);
+      if (actualCollectionRootNode.children) {
+        const { newNode, valid } = createTreeFromFilePath("/", file, actualCollectionRootNode);
         if (valid)
           actualCollectionRootNode.children.push(newNode)
       }
@@ -123,7 +127,7 @@ export default function Page(props: { children: React.ReactNode }) {
     rootNode: actualCollectionRootNode
   })
 
-  const [ selectedFilePath, setSelectedFilePath ] = useState("")
+  const [selectedFilePath, setSelectedFilePath] = useState("")
 
   const [data, setData] = useState<Data>();
   const [error, setError] = useState('');
@@ -136,10 +140,11 @@ export default function Page(props: { children: React.ReactNode }) {
       setIsError(false);
       try {
         if (selectedFilePath.length === 0 || selectedFilePath[0] !== '/') {
-          setData({fileName: "", content: "(no file selected)"})
+          setData({ fileName: "", content: "(no file selected)" })
           return;
         }
-        const res = await fetch(`http://localhost:8080/api/quiz/1/file?path=${selectedFilePath}`, { signal });
+        console.log(numericexerciseId)
+        const res = await fetch(`http://localhost:8080/api/quiz/${numericexerciseId}/file?path=${selectedFilePath}`, { signal });
         const resJson = await res.json();
         setData(resJson);
       } catch (e) {
@@ -161,8 +166,8 @@ export default function Page(props: { children: React.ReactNode }) {
   }, [getData]);
 
   return (
-    <Flex w="100%" h="100%" direction={{base: "column", md: "row"}}>
-      <Box bg="#696773" flexBasis="75%" md={{order: 1}} p={4} overflowY="auto">
+    <Flex w="100%" h="100%" direction={{ base: "column", md: "row" }}>
+      <Box bg="#696773" flexBasis="75%" md={{ order: 1 }} p={4} overflowY="auto">
         <CodeDisplay codeContent={isLoading ? 'Loading...' : isError ? error : (data ? data.content : "(file not loaded)")} filePath={selectedFilePath} />
       </Box>
       <Box bg="#505073" p={4} flexBasis="25%" overflowY="auto">

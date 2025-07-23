@@ -1,6 +1,6 @@
 'use client'
 
-const isLoggedIn : boolean = true;
+// const isLoggedIn: boolean = true;
 
 import {
   Box,
@@ -11,12 +11,12 @@ import {
   IconButton,
   Button,
   Menu,
-//   MenuButton,
-//   MenuList,
+  //   MenuButton,
+  //   MenuList,
   MenuItem,
-//   MenuDivider,
+  //   MenuDivider,
   useDisclosure,
-//   useColorModeValue,
+  //   useColorModeValue,
   Stack,
   LinkOverlay,
   Portal,
@@ -25,6 +25,7 @@ import {
 import Link from 'next/link'
 import { LuExternalLink, LuCirclePlus, LuMenu } from 'react-icons/lu'
 import { MuseoModerno } from 'next/font/google';
+import { useState } from 'react';
 
 interface Props {
   children: React.ReactNode
@@ -33,7 +34,7 @@ interface Props {
 interface SimpleLink {
   name: string,
   href: string,
-  external : boolean,
+  external: boolean,
 }
 
 interface NavLinkProps extends Props {
@@ -68,7 +69,7 @@ const NavLink = (props: NavLinkProps) => {
         // bg: useColorModeValue('gray.200', 'gray.700'),
         bg: "gray.700"
       }}
-      >
+    >
       <Link href={simpleLink.href}>
         <HStack px={2} py={1}>{children}</HStack>
       </Link>
@@ -76,15 +77,16 @@ const NavLink = (props: NavLinkProps) => {
   )
 }
 
-const museoModerno = MuseoModerno({subsets: ["latin"]})
+const museoModerno = MuseoModerno({ subsets: ["latin"] })
 
 export default function WithAction() {
   const { onOpen, onClose } = useDisclosure()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   return (
     <Box as="header" bg={"#009FB7"} px={4} position="fixed" w="100%">
       <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
-        
+
         <Menu.Root >
           <Menu.Trigger paddingY="3" as="div" display={{ md: "none" }}>
             <IconButton
@@ -111,7 +113,7 @@ export default function WithAction() {
 
         <HStack alignItems={'center'}>
           <Box>
-            <Link href="/" style={ {fontSize: "1.5rem"} } className={museoModerno.className}>CodeSmell</Link>
+            <Link href="/" style={{ fontSize: "1.5rem" }} className={museoModerno.className}>CodeSmell</Link>
           </Box>
           <HStack as={'nav'} display={{ base: 'none', md: 'flex' }}>
             {Links.map((link) => (
@@ -125,8 +127,8 @@ export default function WithAction() {
             colorScheme={'teal'}
             size={'sm'}
             mr={4}
-            >
-              <LuCirclePlus /> New Exercise
+          >
+            <LuCirclePlus /> New Exercise
           </Button>
           <Menu.Root positioning={{ placement: "right-end" }}>
             <Menu.Trigger rounded="full" focusRing="outside">
@@ -139,17 +141,17 @@ export default function WithAction() {
               <Menu.Positioner>
                 {isLoggedIn ? (
                   <Menu.Content>
-                    <Menu.Item value="account">Account</Menu.Item>
-                    <Menu.Item value="settings">Settings</Menu.Item>
-                    <Menu.Item value="logout">Logout</Menu.Item>
+                    <Menu.Item value="account"><Link href="/user/profile">Account</Link></Menu.Item>
+                    <Menu.Item value="settings"><Link href="/user/profile/edit">Settings</Link></Menu.Item>
+                    <Menu.Item value="logout"><Link href="#" onClick={() => setIsLoggedIn(false)}>Logout</Link></Menu.Item>
                   </Menu.Content>
                 ) : (
                   <Menu.Content>
-                    <Menu.Item value="sign-up">Sign Up</Menu.Item>
-                    <Menu.Item value="log-in">Log In</Menu.Item>
+                    <Menu.Item value="sign-up"><Link href="/register">Sign Up</Link></Menu.Item>
+                    <Menu.Item value="log-in"><Link href="#" onClick={() => setIsLoggedIn(true)}>Log In</Link></Menu.Item>
                   </Menu.Content>
                 )}
-                
+
               </Menu.Positioner>
             </Portal>
           </Menu.Root>

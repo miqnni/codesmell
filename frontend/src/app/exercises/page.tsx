@@ -28,7 +28,7 @@ export default function Page() {
       <Stack w="100%" my={4}>
         {/* Custom components: GeneralExerciseBox, SingleExerciseBox, ExerciseGroupBox, etc. */}
         {visibleItems.map(({ quizId, quizName }) => (
-          <Link my={2} p={0} key={quizId} href={`/exercises/${quizName}`}>
+          <Link my={2} p={0} key={quizId} href={`/exercises/${quizId}`}>
             <SingleExerciseBox key={quizId} exerciseId={String(quizId)} exerciseName={quizName} />
           </Link>
         ))}
