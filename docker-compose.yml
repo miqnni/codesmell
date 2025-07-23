@@ -13,6 +13,16 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  backend:
+    build: ./backend
+    container_name: codesmelling-backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./quizzes:/app/quizzes
+    depends_on:
+      - postgres
+
   frontend:
     build: ./frontend
     container_name: codesmelling-frontend
@@ -21,13 +31,14 @@ services:
     command: npm run dev
     volumes:
       - ./frontend:/frontend
-      - /frontend/node_modules
+      - frontend_node_modules:/frontend/node_modules
     stdin_open: true
     tty: true
     environment:
       - WATCHPACK_POLLING=true
     depends_on:
-      - postgres
+      - backend
 
 volumes:
   postgres-data:
+  frontend_node_modules:
