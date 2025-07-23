@@ -2,6 +2,7 @@ package com.codesmelling.backend.service;
 
 import com.codesmelling.backend.config.CsvFileConfigLoader;
 import com.codesmelling.backend.database.tables.AppUser;
+import com.codesmelling.backend.dto.User.LoginUserDto;
 import com.codesmelling.backend.dto.User.RegisterUserDto;
 import com.codesmelling.backend.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
@@ -48,4 +49,14 @@ public class AppUserService {
         return userRepository.save(user);
     }
 
+    public AppUser loginUser(LoginUserDto dto) {
+        if (!userRepository.existsByUsername(dto.getUsername())) {
+            throw new IllegalArgumentException("Bad username");
+        }
+        AppUser user = userRepository.findByUsername(dto.getUsername());
+        if (user.getPassword()!=dto.getPassword()){
+            throw new IllegalArgumentException("Bad password");
+        }
+        return user;
+    }
 }

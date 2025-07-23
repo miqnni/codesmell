@@ -1,6 +1,7 @@
 package com.codesmelling.backend.controller;
 
 import com.codesmelling.backend.database.tables.AppUser;
+import com.codesmelling.backend.dto.User.LoginUserDto;
 import com.codesmelling.backend.dto.User.RegisterUserDto;
 import com.codesmelling.backend.service.AppUserService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,16 @@ public class UserController {
             return ResponseEntity.ok("User registered with ID: " + newUser.getId());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Registration failed: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/register")
+    public ResponseEntity<String> login(@RequestBody LoginUserDto dto) {
+        try {
+            AppUser newUser = userService.loginUser(dto);
+            return ResponseEntity.ok("User logged");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Login failed: " + e.getMessage());
         }
     }
 }
