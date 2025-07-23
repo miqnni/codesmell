@@ -13,6 +13,14 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  backend:
+    build: ./backend
+    container_name: codesmelling-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
   frontend:
     build: ./frontend
     container_name: codesmelling-frontend
@@ -27,7 +35,7 @@ services:
     environment:
       - WATCHPACK_POLLING=true
     depends_on:
-      - postgres
+      - backend
 
 volumes:
   postgres-data:
