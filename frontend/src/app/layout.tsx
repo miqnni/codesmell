@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Provider } from "@/components/ui/provider"
 import Header from "@/components/layout/Header";
-import {Box, Container} from "@chakra-ui/react"
+import { Box, Center, Container } from "@chakra-ui/react"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +28,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         <Provider>
           <Box p={0} m={0} minH="100vh" w="100vw">
             <Header />
-            <Box w="100%" h="100dvh" px={10} pt={24} pb={5}>{children}</Box>
+            <Box as="main" w="100%" minH="100dvh" px={10} pt={24} pb={10}>{children}</Box>
           </Box>
         </Provider>
       </body>

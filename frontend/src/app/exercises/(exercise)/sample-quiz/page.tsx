@@ -163,7 +163,6 @@ export default function Page(props: { children: React.ReactNode }) {
   return (
     <Flex w="100%" h="100%" direction={{base: "column", md: "row"}}>
       <Box bg="#696773" flexBasis="75%" md={{order: 1}} p={4} overflowY="auto">
-        {/* TODO: Using the database, turn the selectedFilePath into file content */}
         <CodeDisplay codeContent={isLoading ? 'Loading...' : isError ? error : (data ? data.content : "(file not loaded)")} filePath={selectedFilePath} />
       </Box>
       <Box bg="#505073" p={4} flexBasis="25%" overflowY="auto">

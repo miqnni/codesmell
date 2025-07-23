@@ -20,9 +20,10 @@ import {
   Stack,
   LinkOverlay,
   Portal,
+  Collapsible,
 } from '@chakra-ui/react'
 import Link from 'next/link'
-import { LuExternalLink, LuCirclePlus } from 'react-icons/lu'
+import { LuExternalLink, LuCirclePlus, LuMenu } from 'react-icons/lu'
 import { MuseoModerno } from 'next/font/google';
 
 interface Props {
@@ -83,13 +84,31 @@ export default function WithAction() {
   return (
     <Box as="header" bg={"#009FB7"} px={4} position="fixed" w="100%">
       <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
-        <IconButton
-          size={'md'}
-          // icon={<HamburgerIcon />}
-          aria-label={'Open Menu'}
-          display={{ md: 'none' }}
-          onClick={onClose}
-        />
+        
+        <Menu.Root >
+          <Menu.Trigger paddingY="3" as="div" display={{ md: "none" }}>
+            <IconButton
+              size={'sm'}
+              aria-label={'Open Menu'}
+              display={{ md: 'none' }}
+              onClick={() => console.log("Cluecked!")}
+            ><LuMenu /></IconButton>
+          </Menu.Trigger>
+          <Portal>
+            <Menu.Positioner>
+              <Menu.Content>
+                {Links.map((link) => (
+                  <Menu.Item key={link.href} asChild value={link.name}>
+                    <Link href={link.href} rel="noreferrer">
+                      {link.name}{link.external ? (<LuExternalLink />) : null}
+                    </Link>
+                  </Menu.Item>
+                ))}
+              </Menu.Content>
+            </Menu.Positioner>
+          </Portal>
+        </Menu.Root>
+
         <HStack alignItems={'center'}>
           <Box>
             <Link href="/" style={ {fontSize: "1.5rem"} } className={museoModerno.className}>CodeSmell</Link>
