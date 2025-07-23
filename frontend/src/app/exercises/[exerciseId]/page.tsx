@@ -71,6 +71,7 @@ function createTreeFromFilePath(recentPath: string, remainingPath: string, paren
 export default function Page(props: { children: React.ReactNode }) {
   const { exerciseId } = useParams<{ exerciseId: string }>()
   const numericexerciseId = Number(exerciseId)
+  let quizName : string = ""
 
   const { children } = props
 
@@ -114,6 +115,7 @@ export default function Page(props: { children: React.ReactNode }) {
 
   // Add children to the root node using the function `createTreeFromFilePath`
   if (treeData) {
+    quizName=treeData.quizName
     for (const file of treeData.codeFilePaths) {
       if (actualCollectionRootNode.children) {
         const { newNode, valid } = createTreeFromFilePath("/", file, actualCollectionRootNode);
@@ -175,7 +177,7 @@ export default function Page(props: { children: React.ReactNode }) {
         <CodeDisplay codeContent={isLoading ? 'Loading...' : isError ? error : (data ? data.content : "(file not loaded)")} filePath={selectedFilePath} />
       </Box>
       <Box bg="#505073" p={4} flexBasis="25%" overflowY="auto">
-        <FileTree collection={actualCollection} stateSetter={setSelectedFilePath} />
+        <FileTree collection={actualCollection} stateSetter={setSelectedFilePath} quizName={quizName} />
       </Box>
     </Flex>
   )

@@ -12,8 +12,8 @@ interface Node {
   children?: Node[]
 }
 
-export default function FileTree(props : { collection: TreeCollection<Node>, stateSetter: Dispatch<SetStateAction<string>> }) {
-  const { collection, stateSetter } = props
+export default function FileTree(props : { collection: TreeCollection<Node>, stateSetter: Dispatch<SetStateAction<string>>, quizName: string }) {
+  const { collection, stateSetter, quizName } = props
 
   // const [fileContent, setFileContent] = useState("(no file selected)")
   
@@ -21,7 +21,7 @@ export default function FileTree(props : { collection: TreeCollection<Node>, sta
 
   return (
     <TreeView.Root collection={collection}>
-      <TreeView.Label fontSize={nodeNameFontSize} pb={2} borderBottom="1px solid #EFF1F3">Quiz Name</TreeView.Label>
+      <TreeView.Label fontSize={nodeNameFontSize} pb={2} borderBottom="1px solid #EFF1F3">{quizName}</TreeView.Label>
       <TreeView.Tree>
         <TreeView.Node
           indentGuide={<TreeView.BranchIndentGuide />}
