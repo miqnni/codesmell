@@ -85,10 +85,12 @@ public class QuizService {
     }
 
     public List<QuizListDto> getQuizShortList() throws IOException {
-        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        Resource codeDir = resolver.getResource("classpath:code");
-
-        File baseDir = codeDir.getFile();  // Działa tylko lokalnie
+//        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+//        Resource codeDir = resolver.getResource("classpath:code");
+//
+//        File baseDir = codeDir.getFile();  // Działa tylko lokalnie
+//        File[] quizFolders = baseDir.listFiles(File::isDirectory);
+        File baseDir = new File("quizzes"); // <- folder na tym samym poziomie co JAR (czyli /app/quizzes)
         File[] quizFolders = baseDir.listFiles(File::isDirectory);
 
         List<QuizListDto> result = new ArrayList<>();

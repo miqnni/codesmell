@@ -18,6 +18,8 @@ services:
     container_name: codesmelling-backend
     ports:
       - "8080:8080"
+    volumes:
+      - ./quizzes:/app/quizzes
     depends_on:
       - postgres
 
