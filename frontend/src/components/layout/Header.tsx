@@ -84,7 +84,7 @@ export default function WithAction() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   return (
-    <Box as="header" bg={"#009FB7"} px={4} position="fixed" w="100%">
+    <Box as="header" bg={"#009FB7"} px={4} position="fixed" w="100%" zIndex="99">
       <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
 
         <Menu.Root >
