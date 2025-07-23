@@ -54,7 +54,7 @@ public class AppUserService {
             throw new IllegalArgumentException("Bad username");
         }
         AppUser user = userRepository.findByUsername(dto.getUsername());
-        if (user.getPassword()!=dto.getPassword()){
+        if (!user.getPassword().equals(dto.getPassword())){
             throw new IllegalArgumentException("Bad password");
         }
         return user;

@@ -25,11 +25,11 @@ public class UserController {
         }
     }
 
-    @GetMapping("/register")
+    @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginUserDto dto) {
         try {
-            AppUser newUser = userService.loginUser(dto);
-            return ResponseEntity.ok("User logged");
+            AppUser loggedUser = userService.loginUser(dto);
+            return ResponseEntity.ok("User logged as " + loggedUser.getUsername());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Login failed: " + e.getMessage());
         }

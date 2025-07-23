@@ -82,6 +82,7 @@ const museoModerno = MuseoModerno({ subsets: ["latin"] })
 export default function WithAction() {
   const { onOpen, onClose } = useDisclosure()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [username, setUsername] = useState("Default User")
 
   return (
     <Box as="header" bg={"#009FB7"} px={4} position="fixed" w="100%">
