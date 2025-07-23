@@ -18,6 +18,11 @@ interface Tree {
   codeFilePaths: string[],
 }
 
+interface Data {
+  fileName: string,
+  content: string
+}
+
 // ASSUMPTION: recentPath ends with "/", parentNode has ID equal to recentPath
 function createTreeFromFilePath(recentPath: string, remainingPath: string, parentNode: Node): { newNode: Node, valid: boolean } {
   if (recentPath[recentPath.length - 1] !== "/" || recentPath !== parentNode.id)
@@ -61,10 +66,7 @@ function createTreeFromFilePath(recentPath: string, remainingPath: string, paren
   return { newNode: currNode, valid: true }
 }
 
-interface Data {
-  fileName: string,
-  content: string
-}
+
 
 export default function Page(props: { children: React.ReactNode }) {
   const { exerciseId } = useParams<{ exerciseId: string }>()
@@ -164,6 +166,8 @@ export default function Page(props: { children: React.ReactNode }) {
     getData(controller.signal);
     return () => controller.abort();
   }, [getData]);
+
+
 
   return (
     <Flex w="100%" h="100%" direction={{ base: "column", md: "row" }}>

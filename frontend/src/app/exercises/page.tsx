@@ -3,17 +3,62 @@
 import { ButtonGroup, IconButton, Pagination, Center, Stack, Flex, Heading, Text, Link } from "@chakra-ui/react"
 import { LuChevronLeft, LuChevronRight } from "react-icons/lu"
 import SingleExerciseBox from "@/components/features/exercise-list/SingleExerciseBox";
-import listJSON from "./mock-exercises.json"
-import { useState } from "react";
+// import listJSON from "./mock-exercises.json"
+import { useState, useEffect, useCallback } from "react";
+
+interface Quiz {
+  quizId: number,
+  quizName: string
+}
+
+interface QuizArray extends Array<Quiz> {
+  quizzes: Quiz[]
+}
 
 export default function Page() {
+
+  const [data, setData] = useState<QuizArray>();
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+
+  const getData = useCallback(
+    async (signal: AbortSignal) => {
+      setIsLoading(true);
+      setIsError(false);
+      try {
+        const res = await fetch(`http://localhost:8080/api/quiz/short-list`, { signal });
+        const resJson = await res.json();
+        // console.log(resJson)
+        setData(resJson);
+      } catch (e) {
+        setIsError(true);
+        if (typeof e === "string") setError(e);
+        else if (e instanceof Error) setError(e.message);
+        else setError("Error");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getData(controller.signal);
+    return () => controller.abort();
+  }, [getData]);
+
   const pageSize = 10
-  const count = listJSON.length
+  // console.log(data?.length)
+
+  const count = data ? data.length : 0
+  // console.log(count)
 
   const [page, setPage] = useState(1)
   const startRange = (page - 1) * pageSize
   const endRange = startRange + pageSize
-  const visibleItems = listJSON.slice(startRange, endRange)
+  const visibleItems = data ? data.slice(startRange, endRange) : []
 
   return (
     <Flex direction="column" align="center" >
