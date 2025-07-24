@@ -1,2 +1,4 @@
 lineNumber;fileName;type;quizId
 2;hello_world.py;TYPO;3
+5;gen_bad_go_function.py;DEFAULT;3
+1;components/CodeDisplay.tsx;DEFAULT;3
