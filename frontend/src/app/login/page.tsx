@@ -28,11 +28,12 @@ export default function RegisterForm() {
         },
         body: JSON.stringify(formData)
       });
-
-      const text = await res.text();
       if (res.ok) {
+        const data = await res.text()
+        localStorage.setItem("username", data)
         router.push("/protected/user/profile");
       } else {
+        const text = await res.text();
         setResponseMessage(text);
       }
     } catch (error) {

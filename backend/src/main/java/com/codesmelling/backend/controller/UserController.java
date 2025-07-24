@@ -29,7 +29,7 @@ public class UserController {
     public ResponseEntity<String> login(@RequestBody LoginUserDto dto) {
         try {
             AppUser loggedUser = userService.loginUser(dto);
-            return ResponseEntity.ok("User logged as " + loggedUser.getUsername());
+            return ResponseEntity.ok(loggedUser.getUsername());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Login failed: " + e.getMessage());
         }

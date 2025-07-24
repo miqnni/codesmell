@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Text,
@@ -82,7 +82,7 @@ const UserAvatar = ({ avatarUrl, onAvatarChange }: { avatarUrl: string; onAvatar
 };
 
 // Nazwa użytkownika
-const Username = ({ name }: { name?: string }) => {
+const Username = ({ name }: { name: string | null }) => {
   return (
     <Text fontSize="2xl" fontWeight="bold">
       {name || 'Domyślny Użytkownik'}
@@ -115,8 +115,12 @@ const TaskList = () => {
 // Główny komponent profilu
 const ProfilePage = () => {
   const [avatarUrl, setAvatarUrl] = useState<string>('https://bit.ly/broken-link');
-  const [username, setUsername] = useState<string | undefined>(undefined);
+  const [username, setUsername] = useState<string | null>(null);
   const [solvedTasks, setSolvedTasks] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    setUsername(localStorage.getItem("username"))
+  }, []);
 
   return (
     <VStack p={6} align="center" w="100%" maxW="md" mx="auto">
