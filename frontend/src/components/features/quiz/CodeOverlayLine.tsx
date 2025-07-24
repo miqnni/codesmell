@@ -32,9 +32,11 @@ export default function CodeOverlayLine(props: {
 
   // Here: lineNumber = 1, 2, 3, ...
   const lineNumberDigitCount = Math.floor(Math.log10(lineNumber)) + 1;
-  maxNumberWidthSetter(Math.max(currentMaxNumberWidth, lineNumberDigitCount))
+  // const possibleNewMaxNumberWidth = Math.max(currentMaxNumberWidth, lineNumberDigitCount)
+  // maxNumberWidthSetter(possibleNewMaxNumberWidth)
 
-  const lineNumberText = " ".repeat(currentMaxNumberWidth - lineNumberDigitCount) + String(lineNumber);
+  const lineNumberIndentVal = currentMaxNumberWidth - lineNumberDigitCount > 0 ? currentMaxNumberWidth - lineNumberDigitCount : 0
+  const lineNumberText = " ".repeat(lineNumberIndentVal) + String(lineNumber);
 
   return (
 

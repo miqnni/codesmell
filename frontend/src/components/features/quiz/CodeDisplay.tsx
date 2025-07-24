@@ -29,6 +29,13 @@ export default function CodeDisplay(props: {
 
   useEffect(() => { setMaxNumberWidth(1) }, [filePath])
 
+  useEffect(() => {
+    setMaxNumberWidth(Math.max(
+      maxNumberWidth,
+      Math.floor(Math.log10(lineCount)
+      ) + 1))
+  }, [lineCount])
+
   return (
     <Box position="relative">
       <Box // Overlay for highlighting lines of code
