@@ -61,4 +61,8 @@ public class AppUserService {
         String token = jwtService.generateToken(user);
         return token;
     }
+
+    public String giveMeMyNameService(String token) {
+        return jwtService.extractUsername(token);
+    }
 }

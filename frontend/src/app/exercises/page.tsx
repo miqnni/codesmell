@@ -47,7 +47,7 @@ export default function Page() {
     const controller = new AbortController();
     getData(controller.signal);
     return () => controller.abort();
-  }, [getData]);
+  }, []);
 
   const pageSize = 10
   // console.log(data?.length)

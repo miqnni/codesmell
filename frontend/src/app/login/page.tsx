@@ -30,7 +30,7 @@ export default function RegisterForm() {
       });
       if (res.ok) {
         const data = await res.text()
-        localStorage.setItem("username", data)
+        localStorage.setItem("token", data)
         router.push("/protected/user/profile");
       } else {
         const text = await res.text();

@@ -145,7 +145,7 @@ export default function WithAction() {
                     <Menu.Item value="account"><Link href="protected/user/profile">Account</Link></Menu.Item>
                     <Menu.Item value="settings"><Link href="/user/profile/edit">Settings</Link></Menu.Item>
                     <Menu.Item value="logout"><Link href="/" onClick={() => {
-                      localStorage.removeItem("username")
+                      localStorage.removeItem("token")
                       setIsLoggedIn(false)
                       }}>Logout</Link></Menu.Item>
                   </Menu.Content>
