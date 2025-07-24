@@ -82,6 +82,7 @@ const museoModerno = MuseoModerno({ subsets: ["latin"] })
 export default function WithAction() {
   const { onOpen, onClose } = useDisclosure()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [username, setUsername] = useState("Default User")
 
   return (
     <Box as="header" bg={"#009FB7"} px={4} position="fixed" w="100%" zIndex="99">
@@ -141,9 +142,12 @@ export default function WithAction() {
               <Menu.Positioner>
                 {isLoggedIn ? (
                   <Menu.Content>
-                    <Menu.Item value="account"><Link href="/user/profile">Account</Link></Menu.Item>
+                    <Menu.Item value="account"><Link href="protected/user/profile">Account</Link></Menu.Item>
                     <Menu.Item value="settings"><Link href="/user/profile/edit">Settings</Link></Menu.Item>
-                    <Menu.Item value="logout"><Link href="#" onClick={() => setIsLoggedIn(false)}>Logout</Link></Menu.Item>
+                    <Menu.Item value="logout"><Link href="/" onClick={() => {
+                      localStorage.removeItem("token")
+                      setIsLoggedIn(false)
+                      }}>Logout</Link></Menu.Item>
                   </Menu.Content>
                 ) : (
                   <Menu.Content>

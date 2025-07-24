@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Box,
   Text,
@@ -82,7 +82,7 @@ const UserAvatar = ({ avatarUrl, onAvatarChange }: { avatarUrl: string; onAvatar
 };
 
 // Nazwa użytkownika
-const Username = ({ name }: { name?: string }) => {
+const Username = ({ name }: { name: string | null }) => {
   return (
     <Text fontSize="2xl" fontWeight="bold">
       {name || 'Domyślny Użytkownik'}
@@ -114,9 +114,49 @@ const TaskList = () => {
 
 // Główny komponent profilu
 const ProfilePage = () => {
+
+  const [data, setData] = useState<string>();
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+
+  const getData = useCallback(
+    async (signal: AbortSignal) => {
+      setIsLoading(true);
+      setIsError(false);
+      try {
+        const token = localStorage.getItem("token")
+        const res = await fetch(`http://localhost:8080/api/users/giveMeMyName?token=${token}`, { signal });
+        if (res.ok){
+          const restext = await res.text();
+          setData(restext);
+        }
+      } catch (e) {
+        setIsError(true);
+        if (typeof e === "string") setError(e);
+        else if (e instanceof Error) setError(e.message);
+        else setError("Error");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getData(controller.signal);
+    return () => controller.abort();
+  }, [getData]);
+
   const [avatarUrl, setAvatarUrl] = useState<string>('https://bit.ly/broken-link');
-  const [username, setUsername] = useState<string | undefined>(undefined);
+  const [username, setUsername] = useState<string | null>(null);
   const [solvedTasks, setSolvedTasks] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (data)
+      setUsername(data)
+   }, [data]);
 
   return (
     <VStack p={6} align="center" w="100%" maxW="md" mx="auto">

@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image";
-import { Button, HStack, Center, Stack, Text } from "@chakra-ui/react"
+import { Button, HStack, Center, Stack, Text, Link } from "@chakra-ui/react"
 import { MuseoModerno } from "next/font/google";
 import Confetti, { Rectangle, Circle, Triangle } from '@tholman/confetti';
 
@@ -24,7 +24,7 @@ export default function Page() {
           <Center>
             <HStack align="center">
               <Button>Get Started</Button>
-              <Button>Sign In</Button>
+              <Button><a href="/login">Sign Up</a></Button>
             </HStack>
           </Center>
         </Stack>

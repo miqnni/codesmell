@@ -8,7 +8,6 @@ export default function RegisterForm() {
 
   const [formData, setFormData] = useState({
     username: "",
-    email: "",
     password: ""
   });
 
@@ -22,44 +21,36 @@ export default function RegisterForm() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:8080/api/users/register", {
+      const res = await fetch("http://localhost:8080/api/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify(formData)
       });
-
-      const text = await res.text();
       if (res.ok) {
+        const data = await res.text()
+        localStorage.setItem("token", data)
         router.push("/protected/user/profile");
       } else {
+        const text = await res.text();
         setResponseMessage(text);
       }
     } catch (error) {
-      console.error("Error during registration:", error);
+      console.error("Error during login:", error);
       setResponseMessage("Unexpected error occurred");
     }
   };
 
   return (
     <div className="p-4 max-w-md mx-auto">
-      <h2 className="text-xl font-semibold mb-4">Register</h2>
+      <h2 className="text-xl font-semibold mb-4">Login</h2>
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           type="text"
           name="username"
           placeholder="Username"
           value={formData.username}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
           onChange={handleChange}
           className="w-full p-2 border rounded"
           required
@@ -77,7 +68,7 @@ export default function RegisterForm() {
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          Register
+          Login
         </button>
       </form>
       {responseMessage && (
