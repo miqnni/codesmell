@@ -5,8 +5,8 @@ import com.codesmelling.backend.database.tables.AppUser;
 import com.codesmelling.backend.dto.User.LoginUserDto;
 import com.codesmelling.backend.dto.User.RegisterUserDto;
 import com.codesmelling.backend.repository.AppUserRepository;
+import com.codesmelling.backend.auth.JwtService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -18,6 +18,7 @@ import java.util.List;
 public class AppUserService {
 
     private final AppUserRepository userRepository;
+    private final JwtService jwtService;
     //private final PasswordEncoder passwordEncoder;
 
     private final CsvParserService parser;
@@ -49,7 +50,7 @@ public class AppUserService {
         return userRepository.save(user);
     }
 
-    public AppUser loginUser(LoginUserDto dto) {
+    public String authenticate(LoginUserDto dto) {
         if (!userRepository.existsByUsername(dto.getUsername())) {
             throw new IllegalArgumentException("Bad username");
         }
@@ -57,6 +58,7 @@ public class AppUserService {
         if (!user.getPassword().equals(dto.getPassword())){
             throw new IllegalArgumentException("Bad password");
         }
-        return user;
+        String token = jwtService.generateToken(user);
+        return token;
     }
 }
