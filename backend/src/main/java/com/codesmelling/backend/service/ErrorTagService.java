@@ -11,6 +11,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
 
@@ -23,38 +25,45 @@ public class ErrorTagService {
     private final ErrorTagRepository errorTagRepository;
 
     public void importAllErrorTags() {
-        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        File quizzesDir = new File("quizzes");
 
-        try {
-            // Szukaj wszystkich plików ErrorTags.csv w dowolnym folderze resources/code/**/
-            Resource[] resources = resolver.getResources("classpath:code/**/ErrorTags.csv");
+        if (!quizzesDir.exists() || !quizzesDir.isDirectory()) {
+            System.err.println("❌ Folder 'quizzes/' nie istnieje lub nie jest katalogiem.");
+            return;
+        }
 
-            for (Resource resource : resources) {
-                try (InputStream is = resource.getInputStream()) {
-                    List<ErrorTagCsvDto> dtos = parser.parse(ErrorTagCsvDto.class, is);
+        // Przeszukaj wszystkie podfoldery w 'quizzes/'
+        File[] quizFolders = quizzesDir.listFiles(File::isDirectory);
+        if (quizFolders == null) return;
 
-                    List<ErrorTag> tags = dtos.stream().map(dto -> {
-                        Quiz quiz = quizRepository.findById(dto.getQuizId()).orElseThrow(() ->
-                                new RuntimeException("Quiz not found: ID = " + dto.getQuizId()));
-                        return ErrorTag.builder()
-                                .lineNumber(dto.getLineNumber())
-                                .fileName(dto.getFileName())
-                                .type(ErrorType.valueOf(dto.getType().toString())) //.type(ErrorType.valueOf(dto.getType().toUpperCase()))
-                                .quiz(quiz)
-                                .build();
-                    }).toList();
+        for (File quizFolder : quizFolders) {
+            File errorTagsFile = new File(quizFolder, "ErrorTags.csv");
 
-                    errorTagRepository.saveAll(tags);
-                    System.out.println("✔ Imported from: " + resource.getFilename());
-                } catch (Exception e) {
-                    System.err.println("⚠ Failed to import from: " + resource.getFilename());
-                    e.printStackTrace();
-                }
+            if (!errorTagsFile.exists()) {
+                System.out.println("⚠ Brak ErrorTags.csv w: " + quizFolder.getName());
+                continue;
             }
 
-        } catch (Exception e) {
-            System.err.println("❌ Failed to search ErrorTags.csv files.");
-            e.printStackTrace();
+            try (InputStream is = new FileInputStream(errorTagsFile)) {
+                List<ErrorTagCsvDto> dtos = parser.parse(ErrorTagCsvDto.class, is);
+
+                List<ErrorTag> tags = dtos.stream().map(dto -> {
+                    Quiz quiz = quizRepository.findById(dto.getQuizId()).orElseThrow(() ->
+                            new RuntimeException("Quiz not found: ID = " + dto.getQuizId()));
+                    return ErrorTag.builder()
+                            .lineNumber(dto.getLineNumber())
+                            .fileName(dto.getFileName())
+                            .type(ErrorType.valueOf(dto.getType().toString()))
+                            .quiz(quiz)
+                            .build();
+                }).toList();
+
+                errorTagRepository.saveAll(tags);
+                System.out.println("✔ Zaimportowano z: " + errorTagsFile.getPath());
+            } catch (Exception e) {
+                System.err.println("⚠ Błąd podczas importu z: " + errorTagsFile.getPath());
+                e.printStackTrace();
+            }
         }
     }
 }
