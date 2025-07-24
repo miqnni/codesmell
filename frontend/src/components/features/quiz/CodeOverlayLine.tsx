@@ -4,28 +4,56 @@ import LineHighlight from "@/interfaces/LineHighlight";
 import { Box } from "@chakra-ui/react";
 import { Dispatch, SetStateAction, useState } from "react";
 
-export default function CodeOverlayLine(props: { lineNumber: number, filePath: string, currentUserAnswer: LineHighlight[], userAnswerSetter: Dispatch<SetStateAction<LineHighlight[]>> }) {
-  const { lineNumber, filePath, currentUserAnswer, userAnswerSetter } = props
+export default function CodeOverlayLine(props: {
+  lineNumber: number,
+  filePath: string,
+  stateProps: {
+    currentUserAnswer: LineHighlight[],
+    userAnswerSetter: Dispatch<SetStateAction<LineHighlight[]>>
+    currentMaxNumberWidth: number,
+    maxNumberWidthSetter: Dispatch<SetStateAction<number>>
+  }
+}) {
+  const {
+    lineNumber,
+    filePath,
+    stateProps: {
+      currentUserAnswer,
+      userAnswerSetter,
+      currentMaxNumberWidth,
+      maxNumberWidthSetter
+    }
+  } = props
 
 
+  const initialHighlightState = currentUserAnswer.filter(lineHighlight => (lineHighlight.filePath === filePath && lineHighlight.lineNumber === lineNumber)).length > 0
+  // console.log(`${lineNumber}: ${initialHighlightState ? "iYES" : "iNO"}`)
+  const [highlighted, setHighlighted] = useState(initialHighlightState)
 
-  const [highlighted, setHighlighted] = useState(false)
+  // Here: lineNumber = 1, 2, 3, ...
+  const lineNumberDigitCount = Math.floor(Math.log10(lineNumber)) + 1;
+  maxNumberWidthSetter(Math.max(currentMaxNumberWidth, lineNumberDigitCount))
+
+  const lineNumberText = " ".repeat(currentMaxNumberWidth - lineNumberDigitCount) + String(lineNumber);
 
   return (
+
     <Box
+      fontFamily={"mono"}
       bg={(currentUserAnswer.filter(
         lineHighlight => (lineHighlight.filePath === filePath && lineHighlight.lineNumber === lineNumber)
       )).length > 0 ? "rgba(0,0,255,0.33)" : "rgba(255,255,255,0)"}
-      onMouseDown={() => {
+      onClick={() => {
+        // console.log(highlighted ? "YES" : "NO")
         userAnswerSetter(
           !highlighted
-            ? [...currentUserAnswer, { filePath, lineNumber, errorTag: "DEFAULT" }]
+            ? [...(currentUserAnswer.filter(lineHighlight => !(lineHighlight.filePath === filePath && lineHighlight.lineNumber === lineNumber))), { filePath, lineNumber, errorTag: "DEFAULT" }]
             : currentUserAnswer.filter(lineHighlight => !(lineHighlight.filePath === filePath && lineHighlight.lineNumber === lineNumber))
         )
         setHighlighted(!highlighted)
       }}
     >
-      {lineNumber}
+      {lineNumberText}
     </Box>
   )
 }
