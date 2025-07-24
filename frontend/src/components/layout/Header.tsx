@@ -85,7 +85,7 @@ export default function WithAction() {
   const [username, setUsername] = useState("Default User")
 
   return (
-    <Box as="header" bg={"#009FB7"} px={4} position="fixed" w="100%">
+    <Box as="header" bg={"#009FB7"} px={4} position="fixed" w="100%" zIndex="99">
       <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
 
         <Menu.Root >
