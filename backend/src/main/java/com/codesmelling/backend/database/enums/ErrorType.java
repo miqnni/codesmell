@@ -6,5 +6,6 @@ public enum ErrorType {
     BAD_VARIABLE_NAME,
     LOGIC_ERROR,
     UNUSED_IMPORT,
+    DEFAULT,
     // możesz dodać więcej
 }
