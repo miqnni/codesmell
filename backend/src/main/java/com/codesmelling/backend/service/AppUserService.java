@@ -54,7 +54,8 @@ public class AppUserService {
         if (!userRepository.existsByUsername(dto.getUsername())) {
             throw new IllegalArgumentException("Bad username");
         }
-        AppUser user = userRepository.findByUsername(dto.getUsername());
+        AppUser user = userRepository.findByUsername(dto.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found: "));
         if (!user.getPassword().equals(dto.getPassword())){
             throw new IllegalArgumentException("Bad password");
         }
