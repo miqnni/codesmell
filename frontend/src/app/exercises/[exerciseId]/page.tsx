@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import FileTree from "@/components/features/quiz/FileTree";
 import CodeDisplay from "@/components/features/quiz/CodeDisplay";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import LineHighlight from "@/interfaces/LineHighlight";
 
@@ -197,7 +197,7 @@ export default function Page(props: { children: React.ReactNode }) {
 
   const emptyLineHighlightArray: LineHighlight[] = [];
   const [userAnswer, setUserAnswer] = useState(emptyLineHighlightArray);
-  const toSend: LineHighlight[][] = [];
+  const toSend = useRef<LineHighlight[][]>([]);
 
   return (
     <Flex
@@ -238,9 +238,7 @@ export default function Page(props: { children: React.ReactNode }) {
           </Button>
           <Button
             onClick={() => {
-              console.log("ans:", userAnswer);
-              toSend.push(userAnswer);
-              console.log("SEND:", toSend);
+              toSend.current.push(userAnswer);
               setUserAnswer([]);
             }}
           >
