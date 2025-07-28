@@ -44,7 +44,7 @@ public class QuizSubmissionService {
         int totalAnswers = correctTags.size();
 
         Set<String> correctKeys = correctTags.stream()
-                .map(tag -> tag.getFileName().trim() + ":" + tag.getLineNumber() + ":" + tag.getType().name())
+                .map(tag -> tag.getFileName().trim() + ":" + tag.getLineNumber() + ":" + tag.getType())
                 .collect(Collectors.toSet());
 
         int positive = 0;

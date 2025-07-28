@@ -1,6 +1,5 @@
 package com.codesmelling.backend.service;
 
-import com.codesmelling.backend.database.enums.ErrorType;
 import com.codesmelling.backend.database.tables.ErrorTag;
 import com.codesmelling.backend.database.tables.Quiz;
 import com.codesmelling.backend.dto.ErrorTag.ErrorTagCsvDto;
@@ -53,7 +52,7 @@ public class ErrorTagService {
                     return ErrorTag.builder()
                             .lineNumber(dto.getLineNumber())
                             .fileName(dto.getFileName())
-                            .type(ErrorType.valueOf(dto.getType().toString()))
+                            .type(dto.getType().trim())
                             .quiz(quiz)
                             .build();
                 }).toList();

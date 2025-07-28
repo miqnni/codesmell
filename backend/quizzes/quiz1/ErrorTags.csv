@@ -1,4 +1,4 @@
 lineNumber;fileName;type;quizId
-8;Main.java;TYPO;1
-11;Test.java;TYPO;1
-9;Test.java;DEFAULT;1
+8;Main.java;TPO;1
+11;Test.java;NPE;1
+9;Test.java;SRP;1

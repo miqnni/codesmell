@@ -1,0 +1,5 @@
+code;description;colorHex
+TPO;Typographical error;#ff0000
+SRP;Single Responsibility Principle violation;#00ff99
+DRY;Don't Repeat Yourself;#3399ff
+OOB;Out-of-bounds indexing error;#C70039
