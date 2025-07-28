@@ -245,6 +245,40 @@ export default function Page(props: { children: React.ReactNode }) {
           <Portal>
             <Menu.Positioner>
               <Menu.Content>
+                <Menu.Item value="clear-all-tags">
+                  <Button
+                    bg="#555555"
+                    onClick={() => {
+                      userSelection.map((selectedLine) => {
+                        const currLineNumber: number = selectedLine.lineNumber;
+                        const currLinePath: string = selectedLine.filePath;
+
+                        setPathToLineToTagMap((pathToLineToTagMap) => {
+                          const nextPathToLineToTagMap = {
+                            ...pathToLineToTagMap,
+                          };
+
+                          if (nextPathToLineToTagMap[currLinePath]) {
+                            if (
+                              nextPathToLineToTagMap[currLinePath][
+                                currLineNumber
+                              ]
+                            ) {
+                              nextPathToLineToTagMap[currLinePath][
+                                currLineNumber
+                              ] = new Set();
+                            }
+                          }
+                          return nextPathToLineToTagMap;
+                        });
+
+                        setUserSelection([]);
+                      });
+                    }}
+                  >
+                    <Text>Clear Tags</Text>
+                  </Button>
+                </Menu.Item>
                 {mockTags.map((tag) => (
                   <Menu.Item key={tag.code} value={tag.code}>
                     <Button
@@ -263,9 +297,6 @@ export default function Page(props: { children: React.ReactNode }) {
                               };
 
                               if (nextPathToLineToTagMap[currLinePath]) {
-                                console.log(
-                                  "Mapping exists for: " + currLinePath
-                                );
                                 if (
                                   !nextPathToLineToTagMap[currLinePath][
                                     currLineNumber
@@ -280,14 +311,11 @@ export default function Page(props: { children: React.ReactNode }) {
                                   currLineNumber
                                 ].add(
                                   JSON.stringify({
-                                    colour: tag.colour,
+                                    colour: tag.colorHex,
                                     code: tag.code,
                                   })
                                 );
                               } else {
-                                console.log(
-                                  "Mapping does NOT exist for: " + currLinePath
-                                );
                                 // TODO: D.R.Y.
                                 nextPathToLineToTagMap[currLinePath] = {};
                                 nextPathToLineToTagMap[currLinePath][
@@ -297,12 +325,12 @@ export default function Page(props: { children: React.ReactNode }) {
                                   currLineNumber
                                 ].add(
                                   JSON.stringify({
-                                    colour: tag.colour,
+                                    colour: tag.colorHex,
                                     code: tag.code,
                                   })
                                 );
                               }
-                              console.log(nextPathToLineToTagMap);
+                              // console.log(nextPathToLineToTagMap);
                               return nextPathToLineToTagMap;
                             });
 
@@ -314,9 +342,9 @@ export default function Page(props: { children: React.ReactNode }) {
                         );
                         setUserSelection([]);
                       }}
-                      bg={tag.colour}
+                      bg={tag.colorHex}
                     >
-                      <Text>{tag.name}</Text>
+                      <Text>{tag.description}</Text>
                     </Button>
                   </Menu.Item>
                 ))}
@@ -328,9 +356,41 @@ export default function Page(props: { children: React.ReactNode }) {
         <Stack>
           <Button
             onClick={() => {
-              console.log(toSend);
-              console.log("---");
-              console.log(pathToLineToTagMap);
+              // ! WARNING: Do not use `toSend`!
+              const finalAnswer = {
+                username: "TODO: fetch username",
+                quizId: exerciseId,
+                answers: new Array<{
+                  filePath: string;
+                  lineNumber: string;
+                  errorTag: string;
+                }>(),
+              };
+
+              // pathToLineToTagMap
+
+              for (const [path, lineToTagMap] of Object.entries(
+                pathToLineToTagMap
+              )) {
+                for (const [lineNumber, errorTagSet] of Object.entries(
+                  lineToTagMap
+                )) {
+                  const errorTagStrs = [...errorTagSet];
+                  const errorTagObjs = errorTagStrs.map((elStr) =>
+                    JSON.parse(elStr)
+                  );
+                  for (const errorTagObj of errorTagObjs) {
+                    finalAnswer.answers.push({
+                      filePath: path,
+                      lineNumber: lineNumber,
+                      errorTag: errorTagObj.code,
+                    });
+                  }
+                }
+              }
+
+              // TODO: send to backend
+              console.log(finalAnswer);
             }}
           >
             {" "}
