@@ -3,7 +3,7 @@
 import { Flex, Box, TreeCollection, createTreeCollection, Text, Button, Stack } from "@chakra-ui/react"
 import FileTree from "@/components/features/quiz/FileTree"
 import CodeDisplay from "@/components/features/quiz/CodeDisplay"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import LineHighlight from "@/interfaces/LineHighlight"
 
@@ -172,7 +172,7 @@ export default function Page(props: { children: React.ReactNode }) {
 
   const emptyLineHighlightArray: LineHighlight[] = []
   const [userAnswer, setUserAnswer] = useState(emptyLineHighlightArray)
-  let toSend: LineHighlight[][] = []
+  const toSend = useRef<LineHighlight[][]>([])
 
   return (
     <Flex w="100%" minH="85dvh" h="100%" direction={{ base: "column", md: "row" }}>
@@ -186,10 +186,8 @@ export default function Page(props: { children: React.ReactNode }) {
         <Stack>
           <Button onClick={() => { console.log(userAnswer) }}> <Text>Console log user answer</Text> </Button>
           <Button onClick={() => { 
-            console.log("ans:",userAnswer)
-            toSend.push(userAnswer)
-            console.log("SEND:",toSend)
-            setUserAnswer([]) 
+            toSend.current.push(userAnswer)
+            setUserAnswer([])
             }}> <Text>Tag</Text> </Button>
           <Button onClick={() => { console.log(toSend) }}> <Text>Send Answer</Text> </Button>
         </Stack>
