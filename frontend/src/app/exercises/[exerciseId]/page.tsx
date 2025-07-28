@@ -8,12 +8,17 @@ import {
   Text,
   Button,
   Stack,
+  Menu,
+  Center,
+  Portal,
 } from "@chakra-ui/react";
 import FileTree from "@/components/features/quiz/FileTree";
 import CodeDisplay from "@/components/features/quiz/CodeDisplay";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import LineHighlight from "@/interfaces/LineHighlight";
+import LineLocation from "@/interfaces/LineLocation";
+import mockTags from "./data-tags.json";
 
 interface Node {
   id: string;
@@ -91,15 +96,28 @@ function createTreeFromFilePath(
 
 export default function Page(props: { children: React.ReactNode }) {
   const { exerciseId } = useParams<{ exerciseId: string }>();
-  const numericexerciseId = Number(exerciseId);
-  let quizName: string = "";
-
   const { children } = props;
 
+  // General state variables
+  const [selectedFilePath, setSelectedFilePath] = useState("");
+  const [lineErrorTagMap, setLineErrorTagMap] = useState<{
+    [key: string]: { [key: number]: Set<string> };
+  }>({});
+
+  // getTreeData state variables
   const [treeData, setTreeData] = useState<Tree>();
   const [tError, setTError] = useState("");
   const [isTLoading, setIsTLoading] = useState(false);
   const [isTError, setIsTError] = useState(false);
+
+  // getData state variables
+  const [data, setData] = useState<Data>();
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+
+  const numericexerciseId = Number(exerciseId);
+  let quizName: string = "";
 
   const getTreeData = useCallback(async (signal: AbortSignal) => {
     setIsTLoading(true);
@@ -155,13 +173,6 @@ export default function Page(props: { children: React.ReactNode }) {
     rootNode: actualCollectionRootNode,
   });
 
-  const [selectedFilePath, setSelectedFilePath] = useState("");
-
-  const [data, setData] = useState<Data>();
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
-
   const getData = useCallback(
     async (signal: AbortSignal) => {
       setIsLoading(true);
@@ -196,7 +207,7 @@ export default function Page(props: { children: React.ReactNode }) {
   }, [getData]);
 
   const emptyLineHighlightArray: LineHighlight[] = [];
-  const [userAnswer, setUserAnswer] = useState(emptyLineHighlightArray);
+  const [userSelection, setUserSelection] = useState(emptyLineHighlightArray);
   const toSend = useRef<LineHighlight[][]>([]);
 
   return (
@@ -213,41 +224,97 @@ export default function Page(props: { children: React.ReactNode }) {
         p={4}
         overflowY="auto"
       >
-        <CodeDisplay
-          codeContent={
-            isLoading
-              ? "Loading..."
-              : isError
-              ? error
-              : data
-              ? data.content
-              : "(file not loaded)"
-          }
-          filePath={selectedFilePath}
-          currentUserAnswer={userAnswer}
-          userAnswerSetter={setUserAnswer}
-        />
+        <Menu.Root>
+          <Menu.ContextTrigger style={{ textAlign: "left", width: "100%" }}>
+            <CodeDisplay
+              codeContent={
+                isLoading
+                  ? "Loading..."
+                  : isError
+                  ? error
+                  : data
+                  ? data.content
+                  : "(file not loaded)"
+              }
+              filePath={selectedFilePath}
+              currentUserAnswer={userSelection}
+              userAnswerSetter={setUserSelection}
+            />
+          </Menu.ContextTrigger>
+          <Portal>
+            <Menu.Positioner>
+              <Menu.Content>
+                {mockTags.map((tag) => (
+                  <Menu.Item key={tag.code} value={tag.code}>
+                    <Button
+                      onClick={() => {
+                        toSend.current.push(
+                          userSelection.map((selectedLine) => {
+                            // Associate the newly-added error tags with their corresponding line
+                            const currLineNumber: number =
+                              selectedLine.lineNumber;
+
+                            const currLinePath: string = selectedLine.filePath;
+
+                            setLineErrorTagMap((pathToLineToTagMap) => {
+                              const nextPathToLineToTagMap = {
+                                ...pathToLineToTagMap,
+                              };
+
+                              if (nextPathToLineToTagMap[currLinePath]) {
+                                if (
+                                  !nextPathToLineToTagMap[currLinePath][
+                                    currLineNumber
+                                  ]
+                                ) {
+                                  // No entry for this line number
+                                  nextPathToLineToTagMap[currLinePath][
+                                    currLineNumber
+                                  ] = new Set();
+                                }
+                                nextPathToLineToTagMap[currLinePath][
+                                  currLineNumber
+                                ].add(tag.code);
+                              } else {
+                                // TODO: D.R.Y.
+                                nextPathToLineToTagMap[currLinePath] = {};
+                                nextPathToLineToTagMap[currLinePath][
+                                  currLineNumber
+                                ] = new Set();
+                                nextPathToLineToTagMap[currLinePath][
+                                  currLineNumber
+                                ].add(tag.code);
+                              }
+
+                              return nextPathToLineToTagMap;
+                            });
+
+                            return {
+                              ...selectedLine,
+                              errorTag: tag.code,
+                            };
+                          })
+                        );
+
+                        setUserSelection([]);
+                      }}
+                      bg={tag.colour}
+                    >
+                      <Text>{tag.name}</Text>
+                    </Button>
+                  </Menu.Item>
+                ))}
+              </Menu.Content>
+            </Menu.Positioner>
+          </Portal>
+        </Menu.Root>
+
         <Stack>
           <Button
             onClick={() => {
-              console.log(userAnswer);
-            }}
-          >
-            {" "}
-            <Text>Console log user answer</Text>{" "}
-          </Button>
-          <Button
-            onClick={() => {
-              toSend.current.push(userAnswer);
-              setUserAnswer([]);
-            }}
-          >
-            {" "}
-            <Text>Tag</Text>{" "}
-          </Button>
-          <Button
-            onClick={() => {
               console.log(toSend);
+              console.log("---");
+              console.log(lineErrorTagMap);
             }}
           >
             {" "}
