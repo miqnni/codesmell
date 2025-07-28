@@ -100,7 +100,7 @@ export default function Page(props: { children: React.ReactNode }) {
 
   // General state variables
   const [selectedFilePath, setSelectedFilePath] = useState("");
-  const [lineErrorTagMap, setLineErrorTagMap] = useState<{
+  const [pathToLineToTagMap, setPathToLineToTagMap] = useState<{
     [key: string]: { [key: number]: Set<string> };
   }>({});
 
@@ -237,8 +237,9 @@ export default function Page(props: { children: React.ReactNode }) {
                   : "(file not loaded)"
               }
               filePath={selectedFilePath}
-              currentUserAnswer={userSelection}
-              userAnswerSetter={setUserSelection}
+              pathToLineToTagMap={pathToLineToTagMap}
+              currentUserSelection={userSelection}
+              userSelectionSetter={setUserSelection}
             />
           </Menu.ContextTrigger>
           <Portal>
@@ -256,12 +257,15 @@ export default function Page(props: { children: React.ReactNode }) {
 
                             const currLinePath: string = selectedLine.filePath;
 
-                            setLineErrorTagMap((pathToLineToTagMap) => {
+                            setPathToLineToTagMap((pathToLineToTagMap) => {
                               const nextPathToLineToTagMap = {
                                 ...pathToLineToTagMap,
                               };
 
                               if (nextPathToLineToTagMap[currLinePath]) {
+                                console.log(
+                                  "Mapping exists for: " + currLinePath
+                                );
                                 if (
                                   !nextPathToLineToTagMap[currLinePath][
                                     currLineNumber
@@ -274,8 +278,16 @@ export default function Page(props: { children: React.ReactNode }) {
                                 }
                                 nextPathToLineToTagMap[currLinePath][
                                   currLineNumber
-                                ].add(tag.code);
+                                ].add(
+                                  JSON.stringify({
+                                    colour: tag.colour,
+                                    code: tag.code,
+                                  })
+                                );
                               } else {
+                                console.log(
+                                  "Mapping does NOT exist for: " + currLinePath
+                                );
                                 // TODO: D.R.Y.
                                 nextPathToLineToTagMap[currLinePath] = {};
                                 nextPathToLineToTagMap[currLinePath][
@@ -283,9 +295,14 @@ export default function Page(props: { children: React.ReactNode }) {
                                 ] = new Set();
                                 nextPathToLineToTagMap[currLinePath][
                                   currLineNumber
-                                ].add(tag.code);
+                                ].add(
+                                  JSON.stringify({
+                                    colour: tag.colour,
+                                    code: tag.code,
+                                  })
+                                );
                               }
-
+                              console.log(nextPathToLineToTagMap);
                               return nextPathToLineToTagMap;
                             });
 
@@ -295,7 +312,6 @@ export default function Page(props: { children: React.ReactNode }) {
                             };
                           })
                         );
-
                         setUserSelection([]);
                       }}
                       bg={tag.colour}
@@ -314,7 +330,7 @@ export default function Page(props: { children: React.ReactNode }) {
             onClick={() => {
               console.log(toSend);
               console.log("---");
-              console.log(lineErrorTagMap);
+              console.log(pathToLineToTagMap);
             }}
           >
             {" "}

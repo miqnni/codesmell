@@ -11,10 +11,19 @@ import LineHighlight from "@/interfaces/LineHighlight";
 export default function CodeDisplay(props: {
   codeContent: string;
   filePath: string;
-  currentUserAnswer: LineHighlight[];
-  userAnswerSetter: Dispatch<SetStateAction<LineHighlight[]>>;
+  pathToLineToTagMap: {
+    [key: string]: { [key: number]: Set<string> };
+  };
+  currentUserSelection: LineHighlight[];
+  userSelectionSetter: Dispatch<SetStateAction<LineHighlight[]>>;
 }) {
-  const { codeContent, filePath, userAnswerSetter, currentUserAnswer } = props;
+  const {
+    codeContent,
+    filePath,
+    pathToLineToTagMap,
+    currentUserSelection: currentUserAnswer,
+    userSelectionSetter: userAnswerSetter,
+  } = props;
 
   const dotIdx: number = filePath.lastIndexOf(".");
   const fileExtension: string =
@@ -64,6 +73,7 @@ export default function CodeDisplay(props: {
             stateProps={{
               currentUserSelection: currentUserAnswer,
               userSelectionSetter: userAnswerSetter,
+              pathToLineToTagMap: pathToLineToTagMap,
               currentMaxNumberWidth: maxNumberWidth,
               maxNumberWidthSetter: setMaxNumberWidth,
             }}

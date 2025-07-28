@@ -1,8 +1,9 @@
 "use client";
 
 import LineHighlight from "@/interfaces/LineHighlight";
-import { Box } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import { Dispatch, SetStateAction, useState } from "react";
+import VisualErrorTag from "./VisualErrorTag";
 
 export default function CodeOverlayLine(props: {
   lineNumber: number;
@@ -10,6 +11,9 @@ export default function CodeOverlayLine(props: {
   stateProps: {
     currentUserSelection: LineHighlight[];
     userSelectionSetter: Dispatch<SetStateAction<LineHighlight[]>>;
+    pathToLineToTagMap: {
+      [key: string]: { [key: number]: Set<string> };
+    };
     currentMaxNumberWidth: number;
     maxNumberWidthSetter: Dispatch<SetStateAction<number>>;
   };
@@ -20,6 +24,7 @@ export default function CodeOverlayLine(props: {
     stateProps: {
       currentUserSelection: currentUserAnswer,
       userSelectionSetter: userAnswerSetter,
+      pathToLineToTagMap,
       currentMaxNumberWidth,
       maxNumberWidthSetter,
     },
@@ -46,7 +51,8 @@ export default function CodeOverlayLine(props: {
   const lineNumberText = " ".repeat(lineNumberIndentVal) + String(lineNumber);
 
   return (
-    <Box
+    <Flex
+      justifyContent="space-between"
       fontFamily={"mono"}
       bg={
         currentUserAnswer.filter(
@@ -59,6 +65,11 @@ export default function CodeOverlayLine(props: {
       }
       onClick={() => {
         // console.log(highlighted ? "YES" : "NO")
+        // if (
+        //   pathToLineToTagMap[filePath] &&
+        //   pathToLineToTagMap[filePath][lineNumber]
+        // )
+        // console.log(Array.from(pathToLineToTagMap[filePath][lineNumber]));
         userAnswerSetter(
           !highlighted
             ? [
@@ -83,6 +94,28 @@ export default function CodeOverlayLine(props: {
       }}
     >
       {lineNumberText}
-    </Box>
+      <Flex>
+        {/* A container for a visual representation of error tags */}
+        {/* <VisualErrorTag colour="#dd0000" errorCode="ERRR1" />
+        <VisualErrorTag colour="#dddd00" errorCode="ER2" /> */}
+        {!pathToLineToTagMap[filePath]
+          ? null
+          : !pathToLineToTagMap[filePath][lineNumber]
+          ? null
+          : Array.from(pathToLineToTagMap[filePath][lineNumber])
+              .toSorted()
+              .map((errorTagStr) => {
+                // console.log(filePath + ":" + lineNumber + ":" + errorTag.code);
+                const errorTagObj = JSON.parse(errorTagStr);
+                return (
+                  <VisualErrorTag
+                    key={filePath + ":" + lineNumber + ":" + errorTagObj.code}
+                    colour={errorTagObj.colour}
+                    errorCode={errorTagObj.code}
+                  />
+                );
+              })}
+      </Flex>
+    </Flex>
   );
 }
