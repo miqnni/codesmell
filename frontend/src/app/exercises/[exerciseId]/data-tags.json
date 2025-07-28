@@ -1,27 +1,27 @@
 [
   {
     "code": "ER1",
-    "colour": "#dd0000",
-    "name": "Error 1"
+    "colorHex": "#dd0000",
+    "description": "Error 1"
   },
   {
     "code": "ER2",
-    "colour": "#00dd00",
-    "name": "Error 2"
+    "colorHex": "#00dd00",
+    "description": "Error 2"
   },
   {
     "code": "ER3",
-    "colour": "#0000dd",
-    "name": "Error 3"
+    "colorHex": "#0000dd",
+    "description": "Error 3"
   },
   {
     "code": "ER4",
-    "colour": "#dddd00",
-    "name": "Error 4"
+    "colorHex": "#dddd00",
+    "description": "Error 4"
   },
   {
     "code": "ER5",
-    "colour": "#dd00dd",
-    "name": "Error 5"
+    "colorHex": "#dd00dd",
+    "description": "Error 5"
   }
 ]
