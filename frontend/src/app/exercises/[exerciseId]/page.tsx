@@ -1,6 +1,6 @@
 "use client"
 
-import { Flex, Box, TreeCollection, createTreeCollection, Text, Button } from "@chakra-ui/react"
+import { Flex, Box, TreeCollection, createTreeCollection, Text, Button, Stack } from "@chakra-ui/react"
 import FileTree from "@/components/features/quiz/FileTree"
 import CodeDisplay from "@/components/features/quiz/CodeDisplay"
 import { useCallback, useEffect, useState } from "react"
@@ -172,6 +172,7 @@ export default function Page(props: { children: React.ReactNode }) {
 
   const emptyLineHighlightArray: LineHighlight[] = []
   const [userAnswer, setUserAnswer] = useState(emptyLineHighlightArray)
+  let toSend: LineHighlight[][] = []
 
   return (
     <Flex w="100%" minH="85dvh" h="100%" direction={{ base: "column", md: "row" }}>
@@ -182,7 +183,16 @@ export default function Page(props: { children: React.ReactNode }) {
           currentUserAnswer={userAnswer}
           userAnswerSetter={setUserAnswer}
         />
-        <Button onClick={() => { console.log(userAnswer) }}> <Text>Console log user answer</Text> </Button>
+        <Stack>
+          <Button onClick={() => { console.log(userAnswer) }}> <Text>Console log user answer</Text> </Button>
+          <Button onClick={() => { 
+            console.log("ans:",userAnswer)
+            toSend.push(userAnswer)
+            console.log("SEND:",toSend)
+            setUserAnswer([]) 
+            }}> <Text>Tag</Text> </Button>
+          <Button onClick={() => { console.log(toSend) }}> <Text>Send Answer</Text> </Button>
+        </Stack>
       </Box>
       <Box bg="#505073" p={4} flexBasis="25%" overflowY="auto">
         <FileTree collection={actualCollection} stateSetter={setSelectedFilePath} quizName={quizName} />
