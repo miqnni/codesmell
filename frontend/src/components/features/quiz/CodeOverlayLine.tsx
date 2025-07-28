@@ -2,7 +2,7 @@
 
 import LineHighlight from "@/interfaces/LineHighlight";
 import { Box, Flex } from "@chakra-ui/react";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import VisualErrorTag from "./VisualErrorTag";
 
 export default function CodeOverlayLine(props: {
@@ -22,8 +22,8 @@ export default function CodeOverlayLine(props: {
     lineNumber,
     filePath,
     stateProps: {
-      currentUserSelection: currentUserAnswer,
-      userSelectionSetter: userAnswerSetter,
+      currentUserSelection: currentUserSelection,
+      userSelectionSetter: userSelectionSetter,
       pathToLineToTagMap,
       currentMaxNumberWidth,
       maxNumberWidthSetter,
@@ -31,13 +31,23 @@ export default function CodeOverlayLine(props: {
   } = props;
 
   const initialHighlightState =
-    currentUserAnswer.filter(
+    currentUserSelection.filter(
       (lineHighlight) =>
         lineHighlight.filePath === filePath &&
         lineHighlight.lineNumber === lineNumber
     ).length > 0;
   // console.log(`${lineNumber}: ${initialHighlightState ? "iYES" : "iNO"}`)
   const [highlighted, setHighlighted] = useState(initialHighlightState);
+
+  useEffect(() => {
+    setHighlighted(
+      currentUserSelection.filter(
+        (lineHighlight) =>
+          lineHighlight.filePath === filePath &&
+          lineHighlight.lineNumber === lineNumber
+      ).length > 0
+    );
+  }, [currentUserSelection, filePath, lineNumber]);
 
   // Here: lineNumber = 1, 2, 3, ...
   const lineNumberDigitCount = Math.floor(Math.log10(lineNumber)) + 1;
@@ -55,7 +65,7 @@ export default function CodeOverlayLine(props: {
       justifyContent="space-between"
       fontFamily={"mono"}
       bg={
-        currentUserAnswer.filter(
+        currentUserSelection.filter(
           (lineHighlight) =>
             lineHighlight.filePath === filePath &&
             lineHighlight.lineNumber === lineNumber
@@ -70,10 +80,10 @@ export default function CodeOverlayLine(props: {
         //   pathToLineToTagMap[filePath][lineNumber]
         // )
         // console.log(Array.from(pathToLineToTagMap[filePath][lineNumber]));
-        userAnswerSetter(
+        userSelectionSetter(
           !highlighted
             ? [
-                ...currentUserAnswer.filter(
+                ...currentUserSelection.filter(
                   (lineHighlight) =>
                     !(
                       lineHighlight.filePath === filePath &&
@@ -82,7 +92,7 @@ export default function CodeOverlayLine(props: {
                 ),
                 { filePath, lineNumber, errorTag: "DEFAULT" },
               ]
-            : currentUserAnswer.filter(
+            : currentUserSelection.filter(
                 (lineHighlight) =>
                   !(
                     lineHighlight.filePath === filePath &&
