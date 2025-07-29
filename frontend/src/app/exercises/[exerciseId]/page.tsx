@@ -9,18 +9,15 @@ import {
   Button,
   Stack,
   Menu,
-  Center,
   Portal,
 } from "@chakra-ui/react";
 import FileTree from "@/components/features/quiz/FileTree";
 import CodeDisplay from "@/components/features/quiz/CodeDisplay";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import LineHighlight from "@/interfaces/LineHighlight";
-import LineLocation from "@/interfaces/LineLocation";
 import { Tooltip } from "@/components/ui/tooltip";
 import SubmitDialog from "@/components/features/quiz/SubmitDialog";
-import FinalAnswer from "@/interfaces/FinalAnswer";
 import PathToLineToTagMap from "@/interfaces/PathToLineToTagMap";
 
 // ********* FETCH INTERFACES *********

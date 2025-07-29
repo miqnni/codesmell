@@ -33,11 +33,7 @@ export default function SubmitDialog(props: {
   const defaultFinalAnswer = {
     username: "(Username not fetched)",
     quizId: exerciseId,
-    answers: new Array<{
-      filePath: string;
-      lineNumber: string;
-      errorTag: string;
-    }>(),
+    answers: new Array<ErrorTag>(),
   };
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -100,28 +96,32 @@ export default function SubmitDialog(props: {
 
   // ********* FINAL ANSWER / SUBMISSION RESULTS POST FETCH *********
 
-  const postFinalAnswer = useCallback(async (signal: AbortSignal) => {
-    setIsSubmissionResultsLoading(true);
-    setIsSubmissionResultsError(false);
-    try {
-      const res = await fetch(`http://localhost:8080/api/quiz/submit`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(finalAnswer),
-      });
-      const resJSON = await res.json();
-      setSubmissionResults(resJSON);
-    } catch (e) {
-      setIsSubmissionResultsError(true);
-      if (typeof e === "string") setSubmissionResultsError(e);
-      else if (e instanceof Error) setSubmissionResultsError(e.message);
-      else setSubmissionResultsError("Error");
-    } finally {
-      setIsSubmissionResultsLoading(false);
-    }
-  }, []);
+  const postFinalAnswer = useCallback(
+    async (signal: AbortSignal, answer: FinalAnswer) => {
+      setIsSubmissionResultsLoading(true);
+      setIsSubmissionResultsError(false);
+      try {
+        console.log(JSON.stringify(createFinalAnswer()));
+        const res = await fetch(`http://localhost:8080/api/quiz/submit`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(answer),
+        });
+        const resJSON = await res.json();
+        setSubmissionResults(resJSON.stringify(createFinalAnswer));
+      } catch (e) {
+        setIsSubmissionResultsError(true);
+        if (typeof e === "string") setSubmissionResultsError(e);
+        else if (e instanceof Error) setSubmissionResultsError(e.message);
+        else setSubmissionResultsError("Error");
+      } finally {
+        setIsSubmissionResultsLoading(false);
+      }
+    },
+    []
+  );
 
   // useEffect(() => {
   //   const controller = new AbortController();
@@ -135,9 +135,8 @@ export default function SubmitDialog(props: {
 
   const createFinalAnswer = () => {
     const nextFinalAnswer: FinalAnswer = {
+      ...defaultFinalAnswer,
       username: usernameDataChecked,
-      quizId: exerciseId,
-      answers: new Array<ErrorTag>(),
     };
 
     for (const [path, lineToTagMap] of Object.entries(pathToLineToTagMap)) {
@@ -154,12 +153,14 @@ export default function SubmitDialog(props: {
       }
     }
 
-    setFinalAnswer(nextFinalAnswer);
+    return nextFinalAnswer;
   };
 
   const handleSubmit = () => {
     const controller = new AbortController();
-    postFinalAnswer(controller.signal);
+    const submittedAnswer = createFinalAnswer();
+    setFinalAnswer(submittedAnswer); // For display purposes
+    postFinalAnswer(controller.signal, submittedAnswer);
     return () => controller.abort();
   };
 
@@ -167,7 +168,7 @@ export default function SubmitDialog(props: {
     <Dialog.Root>
       <Dialog.Trigger asChild>
         <Button
-          onClick={createFinalAnswer}
+          onClick={() => setFinalAnswer(createFinalAnswer())}
           variant="solid"
           size="sm"
           mt={4}
