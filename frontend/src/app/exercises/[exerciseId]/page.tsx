@@ -311,7 +311,7 @@ export default function Page(props: { children: React.ReactNode }) {
                                   currLineNumber
                                 ].add(
                                   JSON.stringify({
-                                    colour: tag.colorHex,
+                                    colorHex: tag.colorHex,
                                     code: tag.code,
                                   })
                                 );
@@ -325,7 +325,7 @@ export default function Page(props: { children: React.ReactNode }) {
                                   currLineNumber
                                 ].add(
                                   JSON.stringify({
-                                    colour: tag.colorHex,
+                                    colorHex: tag.colorHex,
                                     code: tag.code,
                                   })
                                 );

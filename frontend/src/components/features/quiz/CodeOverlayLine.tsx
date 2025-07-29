@@ -117,10 +117,11 @@ export default function CodeOverlayLine(props: {
               .map((errorTagStr) => {
                 // console.log(filePath + ":" + lineNumber + ":" + errorTag.code);
                 const errorTagObj = JSON.parse(errorTagStr);
+                console.log(errorTagObj);
                 return (
                   <VisualErrorTag
                     key={filePath + ":" + lineNumber + ":" + errorTagObj.code}
-                    colour={errorTagObj.colour}
+                    colour={errorTagObj.colorHex + "99"}
                     errorCode={errorTagObj.code}
                   />
                 );
