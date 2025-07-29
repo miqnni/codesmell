@@ -100,7 +100,7 @@ export default function SubmitDialog(props: {
 
   // ********* FINAL ANSWER / SUBMISSION RESULTS POST FETCH *********
 
-  const postFinalAnswer = useCallback(async (signal: AbortSignal) => {
+  const postFinalAnswer = useCallback(async (signal: AbortSignal, answerToPost: FinalAnswer) => {
     setIsSubmissionResultsLoading(true);
     setIsSubmissionResultsError(false);
     try {
@@ -109,7 +109,7 @@ export default function SubmitDialog(props: {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(finalAnswer),
+        body: JSON.stringify(answerToPost),
       });
       const resJSON = await res.json();
       setSubmissionResults(resJSON);
@@ -154,12 +154,14 @@ export default function SubmitDialog(props: {
       }
     }
 
-    setFinalAnswer(nextFinalAnswer);
+    return nextFinalAnswer;
   };
 
   const handleSubmit = () => {
     const controller = new AbortController();
-    postFinalAnswer(controller.signal);
+    const answer = createFinalAnswer();
+    setFinalAnswer(answer);
+    postFinalAnswer(controller.signal, answer);
     return () => controller.abort();
   };
 
@@ -167,7 +169,7 @@ export default function SubmitDialog(props: {
     <Dialog.Root>
       <Dialog.Trigger asChild>
         <Button
-          onClick={createFinalAnswer}
+          onClick={() => setFinalAnswer(createFinalAnswer())}
           variant="solid"
           size="sm"
           mt={4}
