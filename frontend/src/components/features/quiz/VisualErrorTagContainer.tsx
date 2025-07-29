@@ -18,7 +18,10 @@ export default function VisualErrorTagContainer(props: {
       opacity={displayVal ? 1.0 : 0.175}
       onMouseEnter={() => setDisplayVal(false)}
       onMouseLeave={() => setDisplayVal(true)}
+      m={0}
+      p={0}
       overflow="hidden"
+      attached
     >
       {/* A container for a visual representation of error tags */}
       {/* <VisualErrorTag colour="#dd0000" errorCode="ERRR1" />

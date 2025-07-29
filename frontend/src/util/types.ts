@@ -1,1 +1,5 @@
-type ErrorTag = "DEFAULT" | "typo" | "srp" | "other"
+type PathToLineToTagMap = {
+  [key: string]: {
+    [key: number]: Set<string>;
+  };
+};

@@ -11,9 +11,7 @@ import LineHighlight from "@/interfaces/LineHighlight";
 export default function CodeDisplay(props: {
   codeContent: string;
   filePath: string;
-  pathToLineToTagMap: {
-    [key: string]: { [key: number]: Set<string> };
-  };
+  pathToLineToTagMap: PathToLineToTagMap;
   currentUserSelection: LineHighlight[];
   userSelectionSetter: Dispatch<SetStateAction<LineHighlight[]>>;
 }) {
