@@ -21,6 +21,7 @@ import LineLocation from "@/interfaces/LineLocation";
 import { Tooltip } from "@/components/ui/tooltip";
 import SubmitDialog from "@/components/features/quiz/SubmitDialog";
 import FinalAnswer from "@/interfaces/FinalAnswer";
+import PathToLineToTagMap from "@/interfaces/PathToLineToTagMap";
 
 // ********* FETCH INTERFACES *********
 interface Node {

@@ -1,6 +1,8 @@
 "use client";
 
+import ErrorTag from "@/interfaces/ErrorTag";
 import FinalAnswer from "@/interfaces/FinalAnswer";
+import PathToLineToTagMap from "@/interfaces/PathToLineToTagMap";
 import {
   Box,
   Button,
@@ -11,6 +13,16 @@ import {
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
 
+// TODO - move the results feedback to a separate component
+
+interface SubmissionResults {
+  correctAnswers: ErrorTag[];
+  incorrectAnswers: ErrorTag[];
+  missingAnswers: ErrorTag[];
+  score: number;
+  scorePercent: number;
+}
+
 // ***********************************************************
 
 export default function SubmitDialog(props: {
@@ -18,9 +30,7 @@ export default function SubmitDialog(props: {
   pathToLineToTagMap: PathToLineToTagMap;
 }) {
   const { exerciseId, pathToLineToTagMap } = props;
-
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [finalAnswer, setFinalAnswer] = useState<FinalAnswer>({
+  const defaultFinalAnswer = {
     username: "(Username not fetched)",
     quizId: exerciseId,
     answers: new Array<{
@@ -28,13 +38,31 @@ export default function SubmitDialog(props: {
       lineNumber: string;
       errorTag: string;
     }>(),
+  };
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [finalAnswer, setFinalAnswer] = useState<FinalAnswer>({
+    ...defaultFinalAnswer,
   });
+
+  // ********* FETCH STATE VARIABLES *********
 
   // * getUsername state variables
   const [usernameData, setUsernameData] = useState<string>("(no username)");
   const [usernameError, setUsernameError] = useState("");
   const [isUsernameLoading, setIsUsernameLoading] = useState(false);
   const [isUsernameError, setIsUsernameError] = useState(false);
+
+  // * postFinalAnswer state variables
+  const [submissionResults, setSubmissionResults] =
+    useState<SubmissionResults>();
+  const [submissionResultsError, setSubmissionResultsError] = useState("");
+  const [isSubmissionResultsLoading, setIsSubmissionResultsLoading] =
+    useState(false);
+  const [isSubmissionResultsError, setIsSubmissionResultsError] =
+    useState(false);
+
+  // ********* (end fetch state variables) *********
 
   // ********* USERNAME FETCH *********
 
@@ -70,17 +98,46 @@ export default function SubmitDialog(props: {
 
   // ********* (end username fetch) *********
 
+  // ********* FINAL ANSWER / SUBMISSION RESULTS POST FETCH *********
+
+  const postFinalAnswer = useCallback(async (signal: AbortSignal) => {
+    setIsSubmissionResultsLoading(true);
+    setIsSubmissionResultsError(false);
+    try {
+      const res = await fetch(`http://localhost:8080/api/quiz/submit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(finalAnswer),
+      });
+      const resJSON = await res.json();
+      setSubmissionResults(resJSON);
+    } catch (e) {
+      setIsSubmissionResultsError(true);
+      if (typeof e === "string") setSubmissionResultsError(e);
+      else if (e instanceof Error) setSubmissionResultsError(e.message);
+      else setSubmissionResultsError("Error");
+    } finally {
+      setIsSubmissionResultsLoading(false);
+    }
+  }, []);
+
+  // useEffect(() => {
+  //   const controller = new AbortController();
+  //   postFinalAnswer(controller.signal);
+  //   return () => controller.abort();
+  // }, [postFinalAnswer]);
+
+  // ********* (end final answer / submission results post fetch) *********
+
   const usernameDataChecked = usernameData || "(UNKNOWN)";
 
-  const handleClick = () => {
+  const createFinalAnswer = () => {
     const nextFinalAnswer: FinalAnswer = {
       username: usernameDataChecked,
       quizId: exerciseId,
-      answers: new Array<{
-        filePath: string;
-        lineNumber: string;
-        errorTag: string;
-      }>(),
+      answers: new Array<ErrorTag>(),
     };
 
     for (const [path, lineToTagMap] of Object.entries(pathToLineToTagMap)) {
@@ -100,11 +157,17 @@ export default function SubmitDialog(props: {
     setFinalAnswer(nextFinalAnswer);
   };
 
+  const handleSubmit = () => {
+    const controller = new AbortController();
+    postFinalAnswer(controller.signal);
+    return () => controller.abort();
+  };
+
   return (
     <Dialog.Root>
       <Dialog.Trigger asChild>
         <Button
-          onClick={handleClick}
+          onClick={createFinalAnswer}
           variant="solid"
           size="sm"
           mt={4}
@@ -131,12 +194,17 @@ export default function SubmitDialog(props: {
                   <code>{JSON.stringify(finalAnswer, null, 2)}</code>
                 </pre>
               </Box>
+              <Box my={4} maxH="50vh" overflowY="auto">
+                <pre>
+                  <code>{JSON.stringify(submissionResults, null, 2)}</code>
+                </pre>
+              </Box>
             </Dialog.Body>
             <Dialog.Footer>
               <Dialog.ActionTrigger asChild>
                 <Button variant="outline">Cancel</Button>
               </Dialog.ActionTrigger>
-              <Button>Submit</Button>
+              <Button onClick={handleSubmit}>Submit</Button>
             </Dialog.Footer>
             <Dialog.CloseTrigger asChild>
               <CloseButton size="sm" />

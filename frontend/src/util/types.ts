@@ -1,5 +1,1 @@
-type PathToLineToTagMap = {
-  [key: string]: {
-    [key: number]: Set<string>;
-  };
-};
+// TODO - custom types (e.g. unions)
