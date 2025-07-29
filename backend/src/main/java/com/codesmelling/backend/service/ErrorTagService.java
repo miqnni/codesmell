@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -24,7 +25,7 @@ public class ErrorTagService {
     private final ErrorTagRepository errorTagRepository;
 
     public void importAllErrorTags() {
-        File quizzesDir = new File("quizzes");
+        File quizzesDir = new File("/app/quizzes");
 
         if (!quizzesDir.exists() || !quizzesDir.isDirectory()) {
             System.err.println("❌ Folder 'quizzes/' nie istnieje lub nie jest katalogiem.");

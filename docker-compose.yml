@@ -19,7 +19,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./quizzes:/app/quizzes
+      - ./backend/quizzes:/app/quizzes
     depends_on:
       - postgres
 

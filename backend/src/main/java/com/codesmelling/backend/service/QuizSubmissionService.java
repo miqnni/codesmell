@@ -97,7 +97,7 @@ public class QuizSubmissionService {
     }
 
     private Set<CorrectTag> loadCorrectTagsFromCsv(Quiz quiz) {
-        File csvFile = new File("quizzes/" + quiz.getQuizName() + "/ErrorTags.csv");
+        File csvFile = new File("app/quizzes/" + quiz.getQuizName() + "/ErrorTags.csv");
         Set<CorrectTag> tags = new HashSet<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(csvFile))) {

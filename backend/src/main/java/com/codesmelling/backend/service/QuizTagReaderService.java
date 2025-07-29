@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QuizTagReaderService {
 
-    private final Path quizzesBasePath = Paths.get("quizzes");
+    private final Path quizzesBasePath = Paths.get("app/quizzes");
 
     public List<TagDto> readTagsForQuiz(Long quizId) {
         Path tagFilePath = quizzesBasePath.resolve("quiz" + quizId).resolve("Tags.csv");
