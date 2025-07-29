@@ -13,6 +13,7 @@ public class ImportManagerService {
     private final ProgressService progressCsvService;
     private final SequenceResetService sequenceResetService;
     private final ErrorTagService errorTagCsvService;
+    private final GlobalTagLoaderService globalTagLoaderService;
 
 
     public void importAll() throws IOException {
@@ -21,5 +22,6 @@ public class ImportManagerService {
         quizCsvService.importQuizzes();
         progressCsvService.importProgress();
         errorTagCsvService.importAllErrorTags();
+        globalTagLoaderService.loadGlobalTags();
     }
 }

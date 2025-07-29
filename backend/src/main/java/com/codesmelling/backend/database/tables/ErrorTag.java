@@ -1,6 +1,5 @@
 package com.codesmelling.backend.database.tables;
 
-import com.codesmelling.backend.database.enums.ErrorType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,8 +21,10 @@ public class ErrorTag {
     @Column(name = "file_name")
     private String fileName;
 
-    @Enumerated(EnumType.STRING)
-    private ErrorType type;
+//    @Enumerated(EnumType.STRING)
+//    private ErrorType type;
+    @Column(name = "tag_code")
+    private String type;
 
     @ManyToOne
     @JoinColumn(name = "quiz_id")

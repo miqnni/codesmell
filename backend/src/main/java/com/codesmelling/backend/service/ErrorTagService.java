@@ -1,6 +1,5 @@
 package com.codesmelling.backend.service;
 
-import com.codesmelling.backend.database.enums.ErrorType;
 import com.codesmelling.backend.database.tables.ErrorTag;
 import com.codesmelling.backend.database.tables.Quiz;
 import com.codesmelling.backend.dto.ErrorTag.ErrorTagCsvDto;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -25,7 +25,7 @@ public class ErrorTagService {
     private final ErrorTagRepository errorTagRepository;
 
     public void importAllErrorTags() {
-        File quizzesDir = new File("quizzes");
+        File quizzesDir = new File("/app/quizzes");
 
         if (!quizzesDir.exists() || !quizzesDir.isDirectory()) {
             System.err.println("❌ Folder 'quizzes/' nie istnieje lub nie jest katalogiem.");
@@ -53,7 +53,7 @@ public class ErrorTagService {
                     return ErrorTag.builder()
                             .lineNumber(dto.getLineNumber())
                             .fileName(dto.getFileName())
-                            .type(ErrorType.valueOf(dto.getType().toString()))
+                            .type(dto.getType().trim())
                             .quiz(quiz)
                             .build();
                 }).toList();

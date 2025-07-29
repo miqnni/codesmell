@@ -33,7 +33,7 @@ public class QuizService {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new RuntimeException("Quiz not found"));
 
-        File quizDir = new File("quizzes", quiz.getQuizName());
+        File quizDir = new File("app/quizzes", quiz.getQuizName());
         if (!quizDir.exists() || !quizDir.isDirectory()) {
             throw new IOException("Quiz directory not found: " + quizDir.getAbsolutePath());
         }
@@ -80,7 +80,7 @@ public class QuizService {
 //
 //        File baseDir = codeDir.getFile();  // Działa tylko lokalnie
 //        File[] quizFolders = baseDir.listFiles(File::isDirectory);
-        File baseDir = new File("quizzes"); // <- folder na tym samym poziomie co JAR (czyli /app/quizzes)
+        File baseDir = new File("app/quizzes"); // <- folder na tym samym poziomie co JAR (czyli /app/quizzes)
         File[] quizFolders = baseDir.listFiles(File::isDirectory);
 
         List<QuizListDto> result = new ArrayList<>();
@@ -104,7 +104,7 @@ public class QuizService {
     }
 
     public List<QuizFilesDto> getAvailableQuizzes() throws IOException {
-        File baseDir = new File("quizzes"); // <-- zakłada folder obok JARa (czyli /app/quizzes)
+        File baseDir = new File("app/quizzes"); // <-- zakłada folder obok JARa (czyli /app/quizzes)
         System.out.println("Ścieżka bazowa: " + baseDir.getAbsolutePath());
 
         List<QuizFilesDto> result = new ArrayList<>();
@@ -138,7 +138,7 @@ public class QuizService {
     }
 
     public QuizFilesDto getQuizById(Long quizId) throws IOException {
-        File baseDir = new File("quizzes");  // <- katalog z quizami (na tym samym poziomie co JAR)
+        File baseDir = new File("app/quizzes");  // <- katalog z quizami (na tym samym poziomie co JAR)
         File[] quizFolders = baseDir.listFiles(File::isDirectory);
 
         if (quizFolders == null) {
@@ -171,7 +171,7 @@ public class QuizService {
                 collectCodeFiles(baseDir, file, result);
             } else {
                 String fileName = file.getName();
-                if (!fileName.equals("Solution.txt") && !fileName.equals("ErrorTags.csv")) {
+                if (!fileName.equals("Solution.txt") && !fileName.equals("ErrorTags.csv") && !fileName.equals("Tags.csv")) {
                     // Ścieżka względna względem folderu quizu
                     Path relativePath = baseDir.toPath().relativize(file.toPath());
                     result.add(relativePath.toString().replace(File.separatorChar, '/'));
@@ -185,7 +185,7 @@ public class QuizService {
                 .orElseThrow(() -> new RuntimeException("Quiz not found"));
 
         // Ścieżka do katalogu quizu, np. "quizzes/quiz_5"
-        File baseDir = new File("quizzes", quiz.getQuizName());
+        File baseDir = new File("app/quizzes", quiz.getQuizName());
 
         // Konkretna ścieżka do pliku wewnątrz katalogu quizu
         File targetFile = new File(baseDir, relativePath);

@@ -1,0 +1,3 @@
+code;description;colorHex
+TPO;Typographical error;#ff0000
+SRP;Single Responsibility Principle violation;#00ff99
