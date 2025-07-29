@@ -23,5 +23,60 @@
     "code": "ER5",
     "colorHex": "#dd00dd",
     "description": "Error 5"
+  },
+  {
+    "code": "ER6",
+    "colorHex": "#5c71bb",
+    "description": "Error 6"
+  },
+  {
+    "code": "SWEET HOME ALABAMA",
+    "colorHex": "#631e0b",
+    "description": "Sweet Home Alabama!"
+  },
+  {
+    "code": "ER8",
+    "colorHex": "#b8e9df",
+    "description": "Error 8"
+  },
+  {
+    "code": "ER9",
+    "colorHex": "#38f22f",
+    "description": "Error 9"
+  },
+  {
+    "code": "E10",
+    "colorHex": "#124d03",
+    "description": "Error 10"
+  },
+  {
+    "code": "E11",
+    "colorHex": "#49beef",
+    "description": "Error 11"
+  },
+  {
+    "code": "E12",
+    "colorHex": "#be8763",
+    "description": "Error 12"
+  },
+  {
+    "code": "E13",
+    "colorHex": "#698ba4",
+    "description": "Error 13"
+  },
+  {
+    "code": "E14",
+    "colorHex": "#3185a0",
+    "description": "Error 14"
+  },
+  {
+    "code": "E15",
+    "colorHex": "#0e5648",
+    "description": "Error 15"
+  },
+  {
+    "code": "ULTRA LONG ERROR CODE SO THAT YOU CAN HAVE NIGHTMARES ABOUT CSS DEBUGGING",
+    "colorHex": "#0e5648",
+    "description": "Death"
   }
 ]

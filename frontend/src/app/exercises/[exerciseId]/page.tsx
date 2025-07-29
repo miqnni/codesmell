@@ -19,6 +19,7 @@ import { useParams } from "next/navigation";
 import LineHighlight from "@/interfaces/LineHighlight";
 import LineLocation from "@/interfaces/LineLocation";
 import mockTags from "./data-tags.json";
+import { Tooltip } from "@/components/ui/tooltip";
 
 interface Node {
   id: string;
@@ -281,71 +282,78 @@ export default function Page(props: { children: React.ReactNode }) {
                 </Menu.Item>
                 {mockTags.map((tag) => (
                   <Menu.Item key={tag.code} value={tag.code}>
-                    <Button
-                      onClick={() => {
-                        toSend.current.push(
-                          userSelection.map((selectedLine) => {
-                            // Associate the newly-added error tags with their corresponding line
-                            const currLineNumber: number =
-                              selectedLine.lineNumber;
+                    <Tooltip
+                      content={tag.description}
+                      openDelay={100}
+                      closeDelay={100}
+                    >
+                      <Button
+                        onClick={() => {
+                          toSend.current.push(
+                            userSelection.map((selectedLine) => {
+                              // Associate the newly-added error tags with their corresponding line
+                              const currLineNumber: number =
+                                selectedLine.lineNumber;
 
-                            const currLinePath: string = selectedLine.filePath;
+                              const currLinePath: string =
+                                selectedLine.filePath;
 
-                            setPathToLineToTagMap((pathToLineToTagMap) => {
-                              const nextPathToLineToTagMap = {
-                                ...pathToLineToTagMap,
-                              };
+                              setPathToLineToTagMap((pathToLineToTagMap) => {
+                                const nextPathToLineToTagMap = {
+                                  ...pathToLineToTagMap,
+                                };
 
-                              if (nextPathToLineToTagMap[currLinePath]) {
-                                if (
-                                  !nextPathToLineToTagMap[currLinePath][
+                                if (nextPathToLineToTagMap[currLinePath]) {
+                                  if (
+                                    !nextPathToLineToTagMap[currLinePath][
+                                      currLineNumber
+                                    ]
+                                  ) {
+                                    // No entry for this line number
+                                    nextPathToLineToTagMap[currLinePath][
+                                      currLineNumber
+                                    ] = new Set();
+                                  }
+                                  nextPathToLineToTagMap[currLinePath][
                                     currLineNumber
-                                  ]
-                                ) {
-                                  // No entry for this line number
+                                  ].add(
+                                    JSON.stringify({
+                                      colorHex: tag.colorHex,
+                                      code: tag.code,
+                                    })
+                                  );
+                                } else {
+                                  // TODO: D.R.Y.
+                                  nextPathToLineToTagMap[currLinePath] = {};
                                   nextPathToLineToTagMap[currLinePath][
                                     currLineNumber
                                   ] = new Set();
+                                  nextPathToLineToTagMap[currLinePath][
+                                    currLineNumber
+                                  ].add(
+                                    JSON.stringify({
+                                      colorHex: tag.colorHex,
+                                      code: tag.code,
+                                    })
+                                  );
                                 }
-                                nextPathToLineToTagMap[currLinePath][
-                                  currLineNumber
-                                ].add(
-                                  JSON.stringify({
-                                    colorHex: tag.colorHex,
-                                    code: tag.code,
-                                  })
-                                );
-                              } else {
-                                // TODO: D.R.Y.
-                                nextPathToLineToTagMap[currLinePath] = {};
-                                nextPathToLineToTagMap[currLinePath][
-                                  currLineNumber
-                                ] = new Set();
-                                nextPathToLineToTagMap[currLinePath][
-                                  currLineNumber
-                                ].add(
-                                  JSON.stringify({
-                                    colorHex: tag.colorHex,
-                                    code: tag.code,
-                                  })
-                                );
-                              }
-                              // console.log(nextPathToLineToTagMap);
-                              return nextPathToLineToTagMap;
-                            });
+                                // console.log(nextPathToLineToTagMap);
+                                return nextPathToLineToTagMap;
+                              });
 
-                            return {
-                              ...selectedLine,
-                              errorTag: tag.code,
-                            };
-                          })
-                        );
-                        setUserSelection([]);
-                      }}
-                      bg={tag.colorHex}
-                    >
-                      <Text>{tag.description}</Text>
-                    </Button>
+                              return {
+                                ...selectedLine,
+                                errorTag: tag.code,
+                              };
+                            })
+                          );
+                          setUserSelection([]);
+                        }}
+                        bg={tag.colorHex}
+                      >
+                        <Text>{tag.code}</Text>
+                      </Button>
+                    </Tooltip>
                   </Menu.Item>
                 ))}
               </Menu.Content>
