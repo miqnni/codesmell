@@ -30,9 +30,7 @@ export default function VisualErrorTagContainer(props: {
         : Array.from(pathToLineToTagMap[filePath][lineNumber])
             .toSorted()
             .map((errorTagStr) => {
-              // console.log(filePath + ":" + lineNumber + ":" + errorTag.code);
               const errorTagObj = JSON.parse(errorTagStr);
-              console.log(errorTagObj);
               return (
                 <VisualErrorTag
                   key={filePath + ":" + lineNumber + ":" + errorTagObj.code}

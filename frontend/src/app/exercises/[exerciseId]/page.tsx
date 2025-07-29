@@ -18,8 +18,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import LineHighlight from "@/interfaces/LineHighlight";
 import LineLocation from "@/interfaces/LineLocation";
-import mockTags from "./data-tags.json";
+// import mockTags from "./data-tags.json";
 import { Tooltip } from "@/components/ui/tooltip";
+import SubmitDialog from "@/components/features/quiz/SubmitDialog";
+import FinalAnswer from "@/interfaces/FinalAnswer";
 
 interface Node {
   id: string;
@@ -37,6 +39,12 @@ interface Data {
   fileName: string;
   content: string;
 }
+
+type TagList = Array<{
+  code: string;
+  description: string;
+  colorHex: string;
+}>;
 
 // ASSUMPTION: recentPath ends with "/", parentNode has ID equal to recentPath
 function createTreeFromFilePath(
@@ -104,6 +112,15 @@ export default function Page(props: { children: React.ReactNode }) {
   const [pathToLineToTagMap, setPathToLineToTagMap] = useState<{
     [key: string]: { [key: number]: Set<string> };
   }>({});
+  const [finalAnswer, setFinalAnswer] = useState<FinalAnswer>({
+    username: "TODO: fetch username",
+    quizId: exerciseId,
+    answers: new Array<{
+      filePath: string;
+      lineNumber: string;
+      errorTag: string;
+    }>(),
+  });
 
   // getTreeData state variables
   const [treeData, setTreeData] = useState<Tree>();
@@ -117,8 +134,16 @@ export default function Page(props: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 
+  // getTags state variables
+  const [tagsData, setTagsData] = useState<TagList>();
+  const [tagsError, setTagsError] = useState("");
+  const [isTagsLoading, setIsTagsLoading] = useState(false);
+  const [isTagsError, setIsTagsError] = useState(false);
+
   const numericexerciseId = Number(exerciseId);
   let quizName: string = "";
+
+  // ********* TREE FETCH *********
 
   const getTreeData = useCallback(async (signal: AbortSignal) => {
     setIsTLoading(true);
@@ -174,6 +199,8 @@ export default function Page(props: { children: React.ReactNode }) {
     rootNode: actualCollectionRootNode,
   });
 
+  // ********* CODE FETCH *********
+
   const getData = useCallback(
     async (signal: AbortSignal) => {
       setIsLoading(true);
@@ -207,9 +234,41 @@ export default function Page(props: { children: React.ReactNode }) {
     return () => controller.abort();
   }, [getData]);
 
+  // ********* TAGS FETCH *********
+
+  const getTagsData = useCallback(async (signal: AbortSignal) => {
+    setIsTagsLoading(true);
+    setIsTagsError(false);
+    try {
+      const res = await fetch(
+        `http://localhost:8080/tags/quiz/${numericexerciseId}`,
+        { signal }
+      );
+      const resJson = await res.json();
+      setTagsData(resJson);
+    } catch (e) {
+      setIsTagsError(true);
+      if (typeof e === "string") setTagsError(e);
+      else if (e instanceof Error) setTagsError(e.message);
+      else setTagsError("Error");
+    } finally {
+      setIsTagsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getTagsData(controller.signal);
+    return () => controller.abort();
+  }, [getTagsData]);
+
+  // ********* - *********
+
   const emptyLineHighlightArray: LineHighlight[] = [];
   const [userSelection, setUserSelection] = useState(emptyLineHighlightArray);
   const toSend = useRef<LineHighlight[][]>([]);
+
+  const tagsDataChecked = tagsData || [];
 
   return (
     <Flex
@@ -280,7 +339,7 @@ export default function Page(props: { children: React.ReactNode }) {
                     <Text>Clear Tags</Text>
                   </Button>
                 </Menu.Item>
-                {mockTags.map((tag) => (
+                {tagsDataChecked.map((tag) => (
                   <Menu.Item key={tag.code} value={tag.code}>
                     <Tooltip
                       content={tag.description}
@@ -362,10 +421,12 @@ export default function Page(props: { children: React.ReactNode }) {
         </Menu.Root>
 
         <Stack>
-          <Button
+          {/* <Button>
+            <Text>Send Answer (LEGACY)</Text>
+          </Button> */}
+          <SubmitDialog
             onClick={() => {
-              // ! WARNING: Do not use `toSend`!
-              const finalAnswer = {
+              const nextFinalAnswer: FinalAnswer = {
                 username: "TODO: fetch username",
                 quizId: exerciseId,
                 answers: new Array<{
@@ -374,8 +435,6 @@ export default function Page(props: { children: React.ReactNode }) {
                   errorTag: string;
                 }>(),
               };
-
-              // pathToLineToTagMap
 
               for (const [path, lineToTagMap] of Object.entries(
                 pathToLineToTagMap
@@ -388,7 +447,7 @@ export default function Page(props: { children: React.ReactNode }) {
                     JSON.parse(elStr)
                   );
                   for (const errorTagObj of errorTagObjs) {
-                    finalAnswer.answers.push({
+                    nextFinalAnswer.answers.push({
                       filePath: path,
                       lineNumber: lineNumber,
                       errorTag: errorTagObj.code,
@@ -397,13 +456,10 @@ export default function Page(props: { children: React.ReactNode }) {
                 }
               }
 
-              // TODO: send to backend
-              console.log(finalAnswer);
+              setFinalAnswer(nextFinalAnswer);
             }}
-          >
-            {" "}
-            <Text>Send Answer</Text>{" "}
-          </Button>
+            finalAnswer={finalAnswer}
+          />
         </Stack>
       </Box>
       <Box bg="#505073" p={4} flexBasis="25%" overflowY="auto">
