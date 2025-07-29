@@ -1,5 +1,6 @@
 package com.codesmelling.backend.controller;
 
+import com.codesmelling.backend.dto.Quiz.QuizEvaluationResultDto;
 import com.codesmelling.backend.dto.Quiz.QuizSubmissionRequestDto;
 import com.codesmelling.backend.service.QuizSubmissionService;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,8 @@ public class QuizSubmissionController {
     private final QuizSubmissionService submissionService;
 
     @PostMapping("/submit")
-    public ResponseEntity<Void> submitQuiz(@RequestBody QuizSubmissionRequestDto request) {
-        submissionService.evaluateAndSaveResult(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<QuizEvaluationResultDto> submitQuiz(@RequestBody QuizSubmissionRequestDto submission) {
+        QuizEvaluationResultDto result = submissionService.evaluateAndSaveResult(submission);
+        return ResponseEntity.ok(result);
     }
 }
