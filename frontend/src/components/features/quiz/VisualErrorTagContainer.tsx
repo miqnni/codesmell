@@ -18,7 +18,10 @@ export default function VisualErrorTagContainer(props: {
       opacity={displayVal ? 1.0 : 0.175}
       onMouseEnter={() => setDisplayVal(false)}
       onMouseLeave={() => setDisplayVal(true)}
+      m={0}
+      p={0}
       overflow="hidden"
+      attached
     >
       {/* A container for a visual representation of error tags */}
       {/* <VisualErrorTag colour="#dd0000" errorCode="ERRR1" />
@@ -30,9 +33,7 @@ export default function VisualErrorTagContainer(props: {
         : Array.from(pathToLineToTagMap[filePath][lineNumber])
             .toSorted()
             .map((errorTagStr) => {
-              // console.log(filePath + ":" + lineNumber + ":" + errorTag.code);
               const errorTagObj = JSON.parse(errorTagStr);
-              console.log(errorTagObj);
               return (
                 <VisualErrorTag
                   key={filePath + ":" + lineNumber + ":" + errorTagObj.code}

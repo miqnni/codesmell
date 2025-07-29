@@ -12,9 +12,7 @@ export default function CodeOverlayLine(props: {
   stateProps: {
     currentUserSelection: LineHighlight[];
     userSelectionSetter: Dispatch<SetStateAction<LineHighlight[]>>;
-    pathToLineToTagMap: {
-      [key: string]: { [key: number]: Set<string> };
-    };
+    pathToLineToTagMap: PathToLineToTagMap;
     currentMaxNumberWidth: number;
     maxNumberWidthSetter: Dispatch<SetStateAction<number>>;
   };

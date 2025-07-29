@@ -1,1 +1,1 @@
-type ErrorTag = "DEFAULT" | "typo" | "srp" | "other"
+// TODO - custom types (e.g. unions)

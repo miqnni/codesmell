@@ -18,9 +18,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import LineHighlight from "@/interfaces/LineHighlight";
 import LineLocation from "@/interfaces/LineLocation";
-import mockTags from "./data-tags.json";
 import { Tooltip } from "@/components/ui/tooltip";
+import SubmitDialog from "@/components/features/quiz/SubmitDialog";
+import FinalAnswer from "@/interfaces/FinalAnswer";
+import PathToLineToTagMap from "@/interfaces/PathToLineToTagMap";
 
+// ********* FETCH INTERFACES *********
 interface Node {
   id: string;
   name: string;
@@ -37,6 +40,14 @@ interface Data {
   fileName: string;
   content: string;
 }
+
+type TagList = Array<{
+  code: string;
+  description: string;
+  colorHex: string;
+}>;
+
+// ********* (end fetch interfaces) *********
 
 // ASSUMPTION: recentPath ends with "/", parentNode has ID equal to recentPath
 function createTreeFromFilePath(
@@ -101,24 +112,35 @@ export default function Page(props: { children: React.ReactNode }) {
 
   // General state variables
   const [selectedFilePath, setSelectedFilePath] = useState("");
-  const [pathToLineToTagMap, setPathToLineToTagMap] = useState<{
-    [key: string]: { [key: number]: Set<string> };
-  }>({});
+  const [pathToLineToTagMap, setPathToLineToTagMap] =
+    useState<PathToLineToTagMap>({});
 
-  // getTreeData state variables
+  // ********* FETCH STATE VARIABLES *********
+
+  // * getTreeData state variables
   const [treeData, setTreeData] = useState<Tree>();
   const [tError, setTError] = useState("");
   const [isTLoading, setIsTLoading] = useState(false);
   const [isTError, setIsTError] = useState(false);
 
-  // getData state variables
+  // * getData state variables
   const [data, setData] = useState<Data>();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 
+  // * getTags state variables
+  const [tagsData, setTagsData] = useState<TagList>();
+  const [tagsError, setTagsError] = useState("");
+  const [isTagsLoading, setIsTagsLoading] = useState(false);
+  const [isTagsError, setIsTagsError] = useState(false);
+
+  // ********* (end fetch state variables) *********
+
   const numericexerciseId = Number(exerciseId);
   let quizName: string = "";
+
+  // ********* TREE FETCH *********
 
   const getTreeData = useCallback(async (signal: AbortSignal) => {
     setIsTLoading(true);
@@ -174,6 +196,10 @@ export default function Page(props: { children: React.ReactNode }) {
     rootNode: actualCollectionRootNode,
   });
 
+  // ********* (end tree fetch) *********
+
+  // ********* CODE FETCH *********
+
   const getData = useCallback(
     async (signal: AbortSignal) => {
       setIsLoading(true);
@@ -207,9 +233,42 @@ export default function Page(props: { children: React.ReactNode }) {
     return () => controller.abort();
   }, [getData]);
 
+  // ********* (end code fetch) *********
+
+  // ********* TAGS FETCH *********
+
+  const getTagsData = useCallback(async (signal: AbortSignal) => {
+    setIsTagsLoading(true);
+    setIsTagsError(false);
+    try {
+      const res = await fetch(
+        `http://localhost:8080/tags/quiz/${numericexerciseId}`,
+        { signal }
+      );
+      const resJson = await res.json();
+      setTagsData(resJson);
+    } catch (e) {
+      setIsTagsError(true);
+      if (typeof e === "string") setTagsError(e);
+      else if (e instanceof Error) setTagsError(e.message);
+      else setTagsError("Error");
+    } finally {
+      setIsTagsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getTagsData(controller.signal);
+    return () => controller.abort();
+  }, [getTagsData]);
+
+  // ********* (end tags fetch) *********
+
   const emptyLineHighlightArray: LineHighlight[] = [];
   const [userSelection, setUserSelection] = useState(emptyLineHighlightArray);
-  const toSend = useRef<LineHighlight[][]>([]);
+
+  const tagsDataChecked = tagsData || [];
 
   return (
     <Flex
@@ -280,7 +339,7 @@ export default function Page(props: { children: React.ReactNode }) {
                     <Text>Clear Tags</Text>
                   </Button>
                 </Menu.Item>
-                {mockTags.map((tag) => (
+                {tagsDataChecked.map((tag) => (
                   <Menu.Item key={tag.code} value={tag.code}>
                     <Tooltip
                       content={tag.description}
@@ -289,64 +348,60 @@ export default function Page(props: { children: React.ReactNode }) {
                     >
                       <Button
                         onClick={() => {
-                          toSend.current.push(
-                            userSelection.map((selectedLine) => {
-                              // Associate the newly-added error tags with their corresponding line
-                              const currLineNumber: number =
-                                selectedLine.lineNumber;
+                          userSelection.map((selectedLine) => {
+                            // Associate the newly-added error tags with their corresponding line
+                            const currLineNumber: number =
+                              selectedLine.lineNumber;
 
-                              const currLinePath: string =
-                                selectedLine.filePath;
+                            const currLinePath: string = selectedLine.filePath;
 
-                              setPathToLineToTagMap((pathToLineToTagMap) => {
-                                const nextPathToLineToTagMap = {
-                                  ...pathToLineToTagMap,
-                                };
+                            setPathToLineToTagMap((pathToLineToTagMap) => {
+                              const nextPathToLineToTagMap = {
+                                ...pathToLineToTagMap,
+                              };
 
-                                if (nextPathToLineToTagMap[currLinePath]) {
-                                  if (
-                                    !nextPathToLineToTagMap[currLinePath][
-                                      currLineNumber
-                                    ]
-                                  ) {
-                                    // No entry for this line number
-                                    nextPathToLineToTagMap[currLinePath][
-                                      currLineNumber
-                                    ] = new Set();
-                                  }
-                                  nextPathToLineToTagMap[currLinePath][
+                              if (nextPathToLineToTagMap[currLinePath]) {
+                                if (
+                                  !nextPathToLineToTagMap[currLinePath][
                                     currLineNumber
-                                  ].add(
-                                    JSON.stringify({
-                                      colorHex: tag.colorHex,
-                                      code: tag.code,
-                                    })
-                                  );
-                                } else {
-                                  // TODO: D.R.Y.
-                                  nextPathToLineToTagMap[currLinePath] = {};
+                                  ]
+                                ) {
+                                  // No entry for this line number
                                   nextPathToLineToTagMap[currLinePath][
                                     currLineNumber
                                   ] = new Set();
-                                  nextPathToLineToTagMap[currLinePath][
-                                    currLineNumber
-                                  ].add(
-                                    JSON.stringify({
-                                      colorHex: tag.colorHex,
-                                      code: tag.code,
-                                    })
-                                  );
                                 }
-                                // console.log(nextPathToLineToTagMap);
-                                return nextPathToLineToTagMap;
-                              });
+                                nextPathToLineToTagMap[currLinePath][
+                                  currLineNumber
+                                ].add(
+                                  JSON.stringify({
+                                    colorHex: tag.colorHex,
+                                    code: tag.code,
+                                  })
+                                );
+                              } else {
+                                // TODO: D.R.Y.
+                                nextPathToLineToTagMap[currLinePath] = {};
+                                nextPathToLineToTagMap[currLinePath][
+                                  currLineNumber
+                                ] = new Set();
+                                nextPathToLineToTagMap[currLinePath][
+                                  currLineNumber
+                                ].add(
+                                  JSON.stringify({
+                                    colorHex: tag.colorHex,
+                                    code: tag.code,
+                                  })
+                                );
+                              }
+                              return nextPathToLineToTagMap;
+                            });
 
-                              return {
-                                ...selectedLine,
-                                errorTag: tag.code,
-                              };
-                            })
-                          );
+                            return {
+                              ...selectedLine,
+                              errorTag: tag.code,
+                            };
+                          });
                           setUserSelection([]);
                         }}
                         bg={tag.colorHex}
@@ -362,48 +417,10 @@ export default function Page(props: { children: React.ReactNode }) {
         </Menu.Root>
 
         <Stack>
-          <Button
-            onClick={() => {
-              // ! WARNING: Do not use `toSend`!
-              const finalAnswer = {
-                username: "TODO: fetch username",
-                quizId: exerciseId,
-                answers: new Array<{
-                  filePath: string;
-                  lineNumber: string;
-                  errorTag: string;
-                }>(),
-              };
-
-              // pathToLineToTagMap
-
-              for (const [path, lineToTagMap] of Object.entries(
-                pathToLineToTagMap
-              )) {
-                for (const [lineNumber, errorTagSet] of Object.entries(
-                  lineToTagMap
-                )) {
-                  const errorTagStrs = [...errorTagSet];
-                  const errorTagObjs = errorTagStrs.map((elStr) =>
-                    JSON.parse(elStr)
-                  );
-                  for (const errorTagObj of errorTagObjs) {
-                    finalAnswer.answers.push({
-                      filePath: path,
-                      lineNumber: lineNumber,
-                      errorTag: errorTagObj.code,
-                    });
-                  }
-                }
-              }
-
-              // TODO: send to backend
-              console.log(finalAnswer);
-            }}
-          >
-            {" "}
-            <Text>Send Answer</Text>{" "}
-          </Button>
+          <SubmitDialog
+            exerciseId={exerciseId}
+            pathToLineToTagMap={pathToLineToTagMap}
+          />
         </Stack>
       </Box>
       <Box bg="#505073" p={4} flexBasis="25%" overflowY="auto">
