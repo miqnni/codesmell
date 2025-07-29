@@ -4,6 +4,8 @@ import com.codesmelling.backend.database.tables.AppUser;
 import com.codesmelling.backend.database.tables.ErrorTag;
 import com.codesmelling.backend.database.tables.Quiz;
 import com.codesmelling.backend.database.tables.UserProgress;
+import com.codesmelling.backend.dto.Quiz.MissingAnswerDto;
+import com.codesmelling.backend.dto.Quiz.QuizEvaluationResultDto;
 import com.codesmelling.backend.dto.Quiz.QuizSubmissionRequestDto;
 import com.codesmelling.backend.dto.User.UserAnswerDto;
 import com.codesmelling.backend.repository.AppUserRepository;
@@ -18,10 +20,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,7 +32,7 @@ public class QuizSubmissionService {
     private final UserProgressRepository progressRepository;
     private final ErrorTagRepository errorTagRepository;
 
-    public void evaluateAndSaveResult(QuizSubmissionRequestDto submission) {
+    public QuizEvaluationResultDto evaluateAndSaveResult(QuizSubmissionRequestDto submission) {
         AppUser user = userRepository.findByUsername(submission.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found: " + submission.getUsername()));
 
@@ -43,36 +42,55 @@ public class QuizSubmissionService {
         List<ErrorTag> correctTags = errorTagRepository.findByQuizId(quiz.getId());
         int totalAnswers = correctTags.size();
 
-        Set<String> correctKeys = correctTags.stream()
-                .map(tag -> tag.getFileName().trim() + ":" + tag.getLineNumber() + ":" + tag.getType())
-                .collect(Collectors.toSet());
+        Map<String, ErrorTag> correctKeyMap = correctTags.stream()
+                .collect(Collectors.toMap(
+                        tag -> tag.getFileName().trim() + ":" + tag.getLineNumber() + ":" + tag.getType(),
+                        tag -> tag
+                ));
 
-        int positive = 0;
-        int negative = 0;
+        Set<String> correctKeys = new HashSet<>(correctKeyMap.keySet());
+
+        List<UserAnswerDto> correctAnswers = new ArrayList<>();
+        List<UserAnswerDto> incorrectAnswers = new ArrayList<>();
+        Set<String> submittedKeys = new HashSet<>();
 
         for (UserAnswerDto answer : submission.getAnswers()) {
             String key = answer.getFilePath().replaceFirst("^/", "").trim() + ":" + answer.getLineNumber() + ":" + answer.getErrorTag();
+            submittedKeys.add(key);
+
             if (correctKeys.contains(key)) {
-                positive++;
+                correctAnswers.add(answer);
             } else {
-                negative++;
+                incorrectAnswers.add(answer);
             }
         }
 
-        int finalScore = Math.max(0, positive - negative);
+        // Oblicz brakujące odpowiedzi
+        List<MissingAnswerDto> missingAnswers = correctKeys.stream()
+                .filter(key -> !submittedKeys.contains(key))
+                .map(key -> {
+                    ErrorTag tag = correctKeyMap.get(key);
+                    return MissingAnswerDto.builder()
+                            .filePath(tag.getFileName())
+                            .lineNumber(tag.getLineNumber())
+                            .errorTag(tag.getType())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        int finalScore = Math.max(0, correctAnswers.size() - incorrectAnswers.size());
         double percentScore = totalAnswers > 0 ? ((double) finalScore / totalAnswers) * 100.0 : 0.0;
 
-
+        // Zapis do UserProgress (jak wcześniej)
         Optional<UserProgress> existingProgressOpt = progressRepository.findByUserAndQuiz(user, quiz);
-
         if (existingProgressOpt.isPresent()) {
-            UserProgress existingProgress = existingProgressOpt.get();
-            if (finalScore > existingProgress.getCorrectAnswers()) {
-                existingProgress.setCorrectAnswers(finalScore);
-                existingProgress.setTotalAnswers(totalAnswers);
-                existingProgress.setScorePercent(percentScore);
-                existingProgress.setCompleted(true);
-                progressRepository.save(existingProgress);
+            UserProgress existing = existingProgressOpt.get();
+            if (finalScore > existing.getCorrectAnswers()) {
+                existing.setCorrectAnswers(finalScore);
+                existing.setTotalAnswers(totalAnswers);
+                existing.setScorePercent(percentScore);
+                existing.setCompleted(true);
+                progressRepository.save(existing);
             }
         } else {
             UserProgress newProgress = UserProgress.builder()
@@ -85,6 +103,14 @@ public class QuizSubmissionService {
                     .build();
             progressRepository.save(newProgress);
         }
+
+        return QuizEvaluationResultDto.builder()
+                .correctAnswers(correctAnswers)
+                .incorrectAnswers(incorrectAnswers)
+                .missingAnswers(missingAnswers)
+                .score(finalScore)
+                .scorePercent(percentScore)
+                .build();
     }
 
 
