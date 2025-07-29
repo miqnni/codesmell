@@ -97,20 +97,19 @@ export default function SubmitDialog(props: {
   // ********* FINAL ANSWER / SUBMISSION RESULTS POST FETCH *********
 
   const postFinalAnswer = useCallback(
-    async (signal: AbortSignal, answer: FinalAnswer) => {
+    async (signal: AbortSignal, answerToPost: FinalAnswer) => {
       setIsSubmissionResultsLoading(true);
       setIsSubmissionResultsError(false);
       try {
-        console.log(JSON.stringify(createFinalAnswer()));
         const res = await fetch(`http://localhost:8080/api/quiz/submit`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(answer),
+          body: JSON.stringify(answerToPost),
         });
         const resJSON = await res.json();
-        setSubmissionResults(resJSON.stringify(createFinalAnswer));
+        setSubmissionResults(resJSON);
       } catch (e) {
         setIsSubmissionResultsError(true);
         if (typeof e === "string") setSubmissionResultsError(e);
@@ -154,13 +153,14 @@ export default function SubmitDialog(props: {
     }
 
     return nextFinalAnswer;
+    return nextFinalAnswer;
   };
 
   const handleSubmit = () => {
     const controller = new AbortController();
-    const submittedAnswer = createFinalAnswer();
-    setFinalAnswer(submittedAnswer); // For display purposes
-    postFinalAnswer(controller.signal, submittedAnswer);
+    const answer = createFinalAnswer();
+    setFinalAnswer(answer);
+    postFinalAnswer(controller.signal, answer);
     return () => controller.abort();
   };
 
