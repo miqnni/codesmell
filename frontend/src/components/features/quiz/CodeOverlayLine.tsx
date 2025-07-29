@@ -4,6 +4,7 @@ import LineHighlight from "@/interfaces/LineHighlight";
 import { Box, Flex } from "@chakra-ui/react";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import VisualErrorTag from "./VisualErrorTag";
+import VisualErrorTagContainer from "./VisualErrorTagContainer";
 
 export default function CodeOverlayLine(props: {
   lineNumber: number;
@@ -62,6 +63,7 @@ export default function CodeOverlayLine(props: {
 
   return (
     <Flex
+      maxH={16}
       justifyContent="space-between"
       fontFamily={"mono"}
       bg={
@@ -104,29 +106,11 @@ export default function CodeOverlayLine(props: {
       }}
     >
       {lineNumberText}
-      <Flex>
-        {/* A container for a visual representation of error tags */}
-        {/* <VisualErrorTag colour="#dd0000" errorCode="ERRR1" />
-        <VisualErrorTag colour="#dddd00" errorCode="ER2" /> */}
-        {!pathToLineToTagMap[filePath]
-          ? null
-          : !pathToLineToTagMap[filePath][lineNumber]
-          ? null
-          : Array.from(pathToLineToTagMap[filePath][lineNumber])
-              .toSorted()
-              .map((errorTagStr) => {
-                // console.log(filePath + ":" + lineNumber + ":" + errorTag.code);
-                const errorTagObj = JSON.parse(errorTagStr);
-                console.log(errorTagObj);
-                return (
-                  <VisualErrorTag
-                    key={filePath + ":" + lineNumber + ":" + errorTagObj.code}
-                    colour={errorTagObj.colorHex + "99"}
-                    errorCode={errorTagObj.code}
-                  />
-                );
-              })}
-      </Flex>
+      <VisualErrorTagContainer
+        pathToLineToTagMap={pathToLineToTagMap}
+        filePath={filePath}
+        lineNumber={lineNumber}
+      />
     </Flex>
   );
 }
