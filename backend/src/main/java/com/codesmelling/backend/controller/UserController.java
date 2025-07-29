@@ -1,8 +1,7 @@
 package com.codesmelling.backend.controller;
 
 import com.codesmelling.backend.database.tables.AppUser;
-import com.codesmelling.backend.dto.User.LoginUserDto;
-import com.codesmelling.backend.dto.User.RegisterUserDto;
+import com.codesmelling.backend.dto.User.*;
 import com.codesmelling.backend.service.AppUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,6 +33,44 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Login failed: " + e.getMessage());
         }
+    }
+
+    @PutMapping("/email")
+    public ResponseEntity<?> updateEmail(@RequestHeader("Authorization") String token,
+                                         @RequestBody EmailUpdateDto dto) {
+        userService.updateEmail(cleanToken(token), dto.newEmail());
+        return ResponseEntity.ok("Email updated");
+    }
+
+    @PutMapping("/username")
+    public ResponseEntity<?> updateUsername(@RequestHeader("Authorization") String token,
+                                            @RequestBody UsernameUpdateDto dto) {
+        userService.updateUsername(cleanToken(token), dto.newUsername());
+        return ResponseEntity.ok("Username updated");
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<?> updatePassword(@RequestHeader("Authorization") String token,
+                                            @RequestBody PasswordUpdateDto dto) {
+        userService.updatePassword(cleanToken(token), dto.oldPassword(), dto.newPassword());
+        return ResponseEntity.ok("Password updated");
+    }
+
+    // do testów bez autoryzacji
+    @PutMapping("/user/password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDto dto) {
+        userService.changePasswordByUsername(dto.getUsername(), dto);
+        return ResponseEntity.ok("Password updated.");
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteAccount(@RequestHeader("Authorization") String token) {
+        userService.deleteAccount(cleanToken(token));
+        return ResponseEntity.ok("Account deleted");
+    }
+
+    private String cleanToken(String rawToken) {
+        return rawToken.replace("Bearer ", "").trim();
     }
 
     @GetMapping("/giveMeMyName")
