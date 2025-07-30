@@ -157,63 +157,95 @@ export default function SubmitDialog(props: {
     return nextFinalAnswer;
   };
 
+  const [openResult, setOpenResult] = useState(false);
+
   const handleSubmit = () => {
     const controller = new AbortController();
     const answer = createFinalAnswer();
     setFinalAnswer(answer);
     postFinalAnswer(controller.signal, answer);
+    setOpenResult(true)
     return () => controller.abort();
   };
 
   return (
-    <Dialog.Root>
-      <Dialog.Trigger asChild>
-        <Button
-          onClick={() => setFinalAnswer(createFinalAnswer())}
-          variant="solid"
-          size="sm"
-          mt={4}
-          disabled={!isLoggedIn}
-        >
-          {isLoggedIn ? <Text>Submit</Text> : <Text>Log in to submit</Text>}
-        </Button>
-      </Dialog.Trigger>
-      <Portal>
-        <Dialog.Backdrop />
-        <Dialog.Positioner>
-          <Dialog.Content>
-            <Dialog.Header>
-              <Dialog.Title>Are you sure?</Dialog.Title>
-            </Dialog.Header>
-            <Dialog.Body>
-              <Text>
-                You will not be able to change your answer after submitting.
-                Your answer applies to <strong>all</strong> the files, not only
-                to the one that is being viewed right now.
-              </Text>
-              <Box my={4} maxH="50vh" overflowY="auto">
-                <pre>
-                  <code>{JSON.stringify(finalAnswer, null, 2)}</code>
-                </pre>
-              </Box>
-              <Box my={4} maxH="50vh" overflowY="auto">
-                <pre>
-                  <code>{JSON.stringify(submissionResults, null, 2)}</code>
-                </pre>
-              </Box>
-            </Dialog.Body>
-            <Dialog.Footer>
-              <Dialog.ActionTrigger asChild>
-                <Button variant="outline">Cancel</Button>
-              </Dialog.ActionTrigger>
-              <Button onClick={handleSubmit}>Submit</Button>
-            </Dialog.Footer>
-            <Dialog.CloseTrigger asChild>
-              <CloseButton size="sm" />
-            </Dialog.CloseTrigger>
-          </Dialog.Content>
-        </Dialog.Positioner>
-      </Portal>
-    </Dialog.Root>
+    <>
+      <Dialog.Root>
+        <Dialog.Trigger asChild>
+          <Button
+            onClick={() => setFinalAnswer(createFinalAnswer())}
+            variant="solid"
+            size="sm"
+            mt={4}
+            disabled={!isLoggedIn}
+          >
+            {isLoggedIn ? <Text>Submit</Text> : <Text>Log in to submit</Text>}
+          </Button>
+        </Dialog.Trigger>
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>Are you sure?</Dialog.Title>
+              </Dialog.Header>
+              <Dialog.Body>
+                <Text>
+                  You will not be able to change your answer after submitting.
+                  Your answer applies to <strong>all</strong> the files, not only
+                  to the one that is being viewed right now.
+                </Text>
+                <Box my={4} maxH="50vh" overflowY="auto">
+                  <pre>
+                    <code>{JSON.stringify(finalAnswer, null, 2)}</code>
+                  </pre>
+                </Box>
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Dialog.ActionTrigger asChild>
+                  <Button variant="outline">Cancel</Button>
+                </Dialog.ActionTrigger>
+                <Dialog.ActionTrigger asChild>
+                  <Button onClick={handleSubmit}>Submit</Button>
+                </Dialog.ActionTrigger>
+              </Dialog.Footer>
+              <Dialog.CloseTrigger asChild>
+                <CloseButton size="sm" />
+              </Dialog.CloseTrigger>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root><Dialog.Root open={openResult} onOpenChange={({ open }) => setOpenResult(open)}>
+          <Portal>
+            <Dialog.Backdrop />
+            <Dialog.Positioner>
+              <Dialog.Content>
+                <Dialog.Header>
+                  <Dialog.Title>Result</Dialog.Title>
+                </Dialog.Header>
+                <Dialog.Body>
+                  <Text>
+                    Score: {submissionResults?.score}
+                  </Text>
+                  <Text>
+                    Percentage: {submissionResults?.scorePercent}%
+                  </Text>
+                  <Box my={4} maxH="50vh" overflowY="auto">
+                    <pre>
+                      <code>{JSON.stringify(submissionResults, null, 2)}</code>
+                    </pre>
+                  </Box>
+                </Dialog.Body>
+                <Dialog.Footer>
+                  <Dialog.ActionTrigger asChild>
+                    <Button variant="outline">OK</Button>
+                  </Dialog.ActionTrigger>
+                </Dialog.Footer>
+              </Dialog.Content>
+            </Dialog.Positioner>
+          </Portal>
+        </Dialog.Root>
+        <Button onClick={()=>{setOpenResult(true)}}>Result</Button>
+      </>
   );
 }
