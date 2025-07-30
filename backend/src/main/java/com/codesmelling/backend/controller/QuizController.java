@@ -34,12 +34,14 @@ public class QuizController {
 
     @GetMapping("/short-list")
     public ResponseEntity<List<QuizListDto>> listQuizNamesAndIds() {
-        try {
-            List<QuizListDto> result = quizService.getQuizShortList();
-            return ResponseEntity.ok(result);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        List<QuizListDto> result = quizService.getQuizShortList();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<QuizListDto>> searchQuizzes(@RequestParam String query) {
+        List<QuizListDto> result = quizService.searchQuizzesByName(query);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{quizId}/file")

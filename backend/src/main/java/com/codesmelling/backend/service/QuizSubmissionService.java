@@ -71,7 +71,7 @@ public class QuizSubmissionService {
                 .map(key -> {
                     ErrorTag tag = correctKeyMap.get(key);
                     return MissingAnswerDto.builder()
-                            .filePath(tag.getFileName())
+                            .filePath(tag.getFileName().startsWith("/") ? tag.getFileName() : "/" + tag.getFileName())
                             .lineNumber(tag.getLineNumber())
                             .errorTag(tag.getType())
                             .build();
