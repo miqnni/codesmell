@@ -1,10 +1,41 @@
 "use client";
 
 import LineHighlight from "@/interfaces/LineHighlight";
-import { Box, Flex } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import VisualErrorTag from "./VisualErrorTag";
 import VisualErrorTagContainer from "./VisualErrorTagContainer";
+import PathToLineToTagMap from "@/interfaces/PathToLineToTagMap";
+import PathToLineToAnswerStateMap from "@/interfaces/PathToLineToAnswerStateMap";
+
+const conditionalLineBackground = (
+  currentUserSelection: LineHighlight[],
+  pathToLineToAnswerStateMap: PathToLineToAnswerStateMap,
+  filePath: string,
+  lineNumber: number
+): string => {
+  if (
+    pathToLineToAnswerStateMap &&
+    pathToLineToAnswerStateMap[filePath] &&
+    pathToLineToAnswerStateMap[filePath][lineNumber]
+  ) {
+    switch (pathToLineToAnswerStateMap[filePath][lineNumber]) {
+      case "correct":
+        return "#00aa0055";
+      case "incorrect":
+        return "#aa000055";
+      case "missing":
+        return "#aaaa0055";
+    }
+  }
+
+  return currentUserSelection.filter(
+    (lineHighlight) =>
+      lineHighlight.filePath === filePath &&
+      lineHighlight.lineNumber === lineNumber
+  ).length > 0
+    ? "rgba(0,0,255,0.33)"
+    : "rgba(255,255,255,0)";
+};
 
 export default function CodeOverlayLine(props: {
   lineNumber: number;
@@ -16,6 +47,7 @@ export default function CodeOverlayLine(props: {
     currentMaxNumberWidth: number;
     maxNumberWidthSetter: Dispatch<SetStateAction<number>>;
   };
+  pathToLineToAnswerStateMap: PathToLineToAnswerStateMap;
 }) {
   const {
     lineNumber,
@@ -25,8 +57,8 @@ export default function CodeOverlayLine(props: {
       userSelectionSetter: userSelectionSetter,
       pathToLineToTagMap,
       currentMaxNumberWidth,
-      maxNumberWidthSetter,
     },
+    pathToLineToAnswerStateMap,
   } = props;
 
   const initialHighlightState =
@@ -35,7 +67,6 @@ export default function CodeOverlayLine(props: {
         lineHighlight.filePath === filePath &&
         lineHighlight.lineNumber === lineNumber
     ).length > 0;
-  // console.log(`${lineNumber}: ${initialHighlightState ? "iYES" : "iNO"}`)
   const [highlighted, setHighlighted] = useState(initialHighlightState);
 
   useEffect(() => {
@@ -64,22 +95,13 @@ export default function CodeOverlayLine(props: {
       maxH={16}
       justifyContent="space-between"
       fontFamily={"mono"}
-      bg={
-        currentUserSelection.filter(
-          (lineHighlight) =>
-            lineHighlight.filePath === filePath &&
-            lineHighlight.lineNumber === lineNumber
-        ).length > 0
-          ? "rgba(0,0,255,0.33)"
-          : "rgba(255,255,255,0)"
-      }
+      bg={conditionalLineBackground(
+        currentUserSelection,
+        pathToLineToAnswerStateMap,
+        filePath,
+        lineNumber
+      )}
       onClick={() => {
-        // console.log(highlighted ? "YES" : "NO")
-        // if (
-        //   pathToLineToTagMap[filePath] &&
-        //   pathToLineToTagMap[filePath][lineNumber]
-        // )
-        // console.log(Array.from(pathToLineToTagMap[filePath][lineNumber]));
         userSelectionSetter(
           !highlighted
             ? [

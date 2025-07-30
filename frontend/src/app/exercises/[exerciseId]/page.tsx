@@ -9,19 +9,18 @@ import {
   Button,
   Stack,
   Menu,
-  Center,
   Portal,
 } from "@chakra-ui/react";
 import FileTree from "@/components/features/quiz/FileTree";
 import CodeDisplay from "@/components/features/quiz/CodeDisplay";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import LineHighlight from "@/interfaces/LineHighlight";
-import LineLocation from "@/interfaces/LineLocation";
 import { Tooltip } from "@/components/ui/tooltip";
 import SubmitDialog from "@/components/features/quiz/SubmitDialog";
-import FinalAnswer from "@/interfaces/FinalAnswer";
 import PathToLineToTagMap from "@/interfaces/PathToLineToTagMap";
+import SubmissionResults from "@/interfaces/SubmissionResults";
+import ErrorTagDetails from "@/interfaces/ErrorTagDetails";
 
 // ********* FETCH INTERFACES *********
 interface Node {
@@ -41,11 +40,7 @@ interface Data {
   content: string;
 }
 
-type TagList = Array<{
-  code: string;
-  description: string;
-  colorHex: string;
-}>;
+type TagList = Array<ErrorTagDetails>;
 
 // ********* (end fetch interfaces) *********
 
@@ -106,22 +101,24 @@ function createTreeFromFilePath(
   return { newNode: currNode, valid: true };
 }
 
-export default function Page(props: { children: React.ReactNode }) {
+export default function Page() {
   const { exerciseId } = useParams<{ exerciseId: string }>();
-  const { children } = props;
 
   // General state variables
   const [selectedFilePath, setSelectedFilePath] = useState("");
   const [pathToLineToTagMap, setPathToLineToTagMap] =
     useState<PathToLineToTagMap>({});
+  const [submissionResults, setSubmissionResults] =
+    useState<SubmissionResults>();
+  const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
 
   // ********* FETCH STATE VARIABLES *********
 
   // * getTreeData state variables
   const [treeData, setTreeData] = useState<Tree>();
-  const [tError, setTError] = useState("");
-  const [isTLoading, setIsTLoading] = useState(false);
-  const [isTError, setIsTError] = useState(false);
+  const [, setTError] = useState("");
+  const [, setIsTLoading] = useState(false);
+  const [, setIsTError] = useState(false);
 
   // * getData state variables
   const [data, setData] = useState<Data>();
@@ -131,9 +128,9 @@ export default function Page(props: { children: React.ReactNode }) {
 
   // * getTags state variables
   const [tagsData, setTagsData] = useState<TagList>();
-  const [tagsError, setTagsError] = useState("");
-  const [isTagsLoading, setIsTagsLoading] = useState(false);
-  const [isTagsError, setIsTagsError] = useState(false);
+  const [, setTagsError] = useState("");
+  const [, setIsTagsLoading] = useState(false);
+  const [, setIsTagsError] = useState(false);
 
   // ********* (end fetch state variables) *********
 
@@ -142,25 +139,28 @@ export default function Page(props: { children: React.ReactNode }) {
 
   // ********* TREE FETCH *********
 
-  const getTreeData = useCallback(async (signal: AbortSignal) => {
-    setIsTLoading(true);
-    setIsTError(false);
-    try {
-      const res = await fetch(
-        `http://localhost:8080/api/quiz/${numericexerciseId}/info`,
-        { signal }
-      );
-      const resJson = await res.json();
-      setTreeData(resJson);
-    } catch (e) {
-      setIsTError(true);
-      if (typeof e === "string") setTError(e);
-      else if (e instanceof Error) setTError(e.message);
-      else setTError("Error");
-    } finally {
-      setIsTLoading(false);
-    }
-  }, []);
+  const getTreeData = useCallback(
+    async (signal: AbortSignal) => {
+      setIsTLoading(true);
+      setIsTError(false);
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/quiz/${numericexerciseId}/info`,
+          { signal }
+        );
+        const resJson = await res.json();
+        setTreeData(resJson);
+      } catch (e) {
+        setIsTError(true);
+        if (typeof e === "string") setTError(e);
+        else if (e instanceof Error) setTError(e.message);
+        else setTError("Error");
+      } finally {
+        setIsTLoading(false);
+      }
+    },
+    [numericexerciseId]
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -224,7 +224,7 @@ export default function Page(props: { children: React.ReactNode }) {
         setIsLoading(false);
       }
     },
-    [selectedFilePath]
+    [numericexerciseId, selectedFilePath]
   );
 
   useEffect(() => {
@@ -237,25 +237,28 @@ export default function Page(props: { children: React.ReactNode }) {
 
   // ********* TAGS FETCH *********
 
-  const getTagsData = useCallback(async (signal: AbortSignal) => {
-    setIsTagsLoading(true);
-    setIsTagsError(false);
-    try {
-      const res = await fetch(
-        `http://localhost:8080/tags/quiz/${numericexerciseId}`,
-        { signal }
-      );
-      const resJson = await res.json();
-      setTagsData(resJson);
-    } catch (e) {
-      setIsTagsError(true);
-      if (typeof e === "string") setTagsError(e);
-      else if (e instanceof Error) setTagsError(e.message);
-      else setTagsError("Error");
-    } finally {
-      setIsTagsLoading(false);
-    }
-  }, []);
+  const getTagsData = useCallback(
+    async (signal: AbortSignal) => {
+      setIsTagsLoading(true);
+      setIsTagsError(false);
+      try {
+        const res = await fetch(
+          `http://localhost:8080/tags/quiz/${numericexerciseId}`,
+          { signal }
+        );
+        const resJson = await res.json();
+        setTagsData(resJson);
+      } catch (e) {
+        setIsTagsError(true);
+        if (typeof e === "string") setTagsError(e);
+        else if (e instanceof Error) setTagsError(e.message);
+        else setTagsError("Error");
+      } finally {
+        setIsTagsLoading(false);
+      }
+    },
+    [numericexerciseId]
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -269,6 +272,74 @@ export default function Page(props: { children: React.ReactNode }) {
   const [userSelection, setUserSelection] = useState(emptyLineHighlightArray);
 
   const tagsDataChecked = tagsData || [];
+
+  // ********* FUNCTIONS / HANDLERS *********
+  const handleClearTags = () => {
+    userSelection.map((selectedLine) => {
+      const currLineNumber: number = selectedLine.lineNumber;
+      const currLinePath: string = selectedLine.filePath;
+
+      setPathToLineToTagMap((pathToLineToTagMap) => {
+        const nextPathToLineToTagMap = {
+          ...pathToLineToTagMap,
+        };
+
+        if (nextPathToLineToTagMap[currLinePath]) {
+          if (nextPathToLineToTagMap[currLinePath][currLineNumber]) {
+            nextPathToLineToTagMap[currLinePath][currLineNumber] = new Set();
+          }
+        }
+        return nextPathToLineToTagMap;
+      });
+
+      setUserSelection([]);
+    });
+  };
+
+  const addTag = (tag: ErrorTagDetails) => {
+    userSelection.map((selectedLine) => {
+      // Associate the newly-added error tags with their corresponding line
+      const currLineNumber: number = selectedLine.lineNumber;
+
+      const currLinePath: string = selectedLine.filePath;
+
+      setPathToLineToTagMap((pathToLineToTagMap) => {
+        const nextPathToLineToTagMap = {
+          ...pathToLineToTagMap,
+        };
+
+        if (nextPathToLineToTagMap[currLinePath]) {
+          if (!nextPathToLineToTagMap[currLinePath][currLineNumber]) {
+            // No entry for this line number
+            nextPathToLineToTagMap[currLinePath][currLineNumber] = new Set();
+          }
+          nextPathToLineToTagMap[currLinePath][currLineNumber].add(
+            JSON.stringify({
+              colorHex: tag.colorHex,
+              code: tag.code,
+            })
+          );
+        } else {
+          // TODO: D.R.Y.
+          nextPathToLineToTagMap[currLinePath] = {};
+          nextPathToLineToTagMap[currLinePath][currLineNumber] = new Set();
+          nextPathToLineToTagMap[currLinePath][currLineNumber].add(
+            JSON.stringify({
+              colorHex: tag.colorHex,
+              code: tag.code,
+            })
+          );
+        }
+        return nextPathToLineToTagMap;
+      });
+
+      return {
+        ...selectedLine,
+        errorTag: tag.code,
+      };
+    });
+    setUserSelection([]);
+  };
 
   return (
     <Flex
@@ -300,42 +371,14 @@ export default function Page(props: { children: React.ReactNode }) {
               pathToLineToTagMap={pathToLineToTagMap}
               currentUserSelection={userSelection}
               userSelectionSetter={setUserSelection}
+              submissionResults={submissionResults}
             />
           </Menu.ContextTrigger>
           <Portal>
             <Menu.Positioner>
               <Menu.Content>
                 <Menu.Item value="clear-all-tags">
-                  <Button
-                    bg="#555555"
-                    onClick={() => {
-                      userSelection.map((selectedLine) => {
-                        const currLineNumber: number = selectedLine.lineNumber;
-                        const currLinePath: string = selectedLine.filePath;
-
-                        setPathToLineToTagMap((pathToLineToTagMap) => {
-                          const nextPathToLineToTagMap = {
-                            ...pathToLineToTagMap,
-                          };
-
-                          if (nextPathToLineToTagMap[currLinePath]) {
-                            if (
-                              nextPathToLineToTagMap[currLinePath][
-                                currLineNumber
-                              ]
-                            ) {
-                              nextPathToLineToTagMap[currLinePath][
-                                currLineNumber
-                              ] = new Set();
-                            }
-                          }
-                          return nextPathToLineToTagMap;
-                        });
-
-                        setUserSelection([]);
-                      });
-                    }}
-                  >
+                  <Button bg="#555555" onClick={handleClearTags}>
                     <Text>Clear Tags</Text>
                   </Button>
                 </Menu.Item>
@@ -348,61 +391,7 @@ export default function Page(props: { children: React.ReactNode }) {
                     >
                       <Button
                         onClick={() => {
-                          userSelection.map((selectedLine) => {
-                            // Associate the newly-added error tags with their corresponding line
-                            const currLineNumber: number =
-                              selectedLine.lineNumber;
-
-                            const currLinePath: string = selectedLine.filePath;
-
-                            setPathToLineToTagMap((pathToLineToTagMap) => {
-                              const nextPathToLineToTagMap = {
-                                ...pathToLineToTagMap,
-                              };
-
-                              if (nextPathToLineToTagMap[currLinePath]) {
-                                if (
-                                  !nextPathToLineToTagMap[currLinePath][
-                                    currLineNumber
-                                  ]
-                                ) {
-                                  // No entry for this line number
-                                  nextPathToLineToTagMap[currLinePath][
-                                    currLineNumber
-                                  ] = new Set();
-                                }
-                                nextPathToLineToTagMap[currLinePath][
-                                  currLineNumber
-                                ].add(
-                                  JSON.stringify({
-                                    colorHex: tag.colorHex,
-                                    code: tag.code,
-                                  })
-                                );
-                              } else {
-                                // TODO: D.R.Y.
-                                nextPathToLineToTagMap[currLinePath] = {};
-                                nextPathToLineToTagMap[currLinePath][
-                                  currLineNumber
-                                ] = new Set();
-                                nextPathToLineToTagMap[currLinePath][
-                                  currLineNumber
-                                ].add(
-                                  JSON.stringify({
-                                    colorHex: tag.colorHex,
-                                    code: tag.code,
-                                  })
-                                );
-                              }
-                              return nextPathToLineToTagMap;
-                            });
-
-                            return {
-                              ...selectedLine,
-                              errorTag: tag.code,
-                            };
-                          });
-                          setUserSelection([]);
+                          addTag(tag);
                         }}
                         bg={tag.colorHex}
                       >
@@ -420,6 +409,12 @@ export default function Page(props: { children: React.ReactNode }) {
           <SubmitDialog
             exerciseId={exerciseId}
             pathToLineToTagMap={pathToLineToTagMap}
+            submissionResults={submissionResults}
+            onAnswerSubmit={(nextSubmissionResults) => {
+              setIsAnswerSubmitted(true);
+              setSubmissionResults(nextSubmissionResults);
+            }}
+            isAnswerSubmitted={isAnswerSubmitted}
           />
         </Stack>
       </Box>
