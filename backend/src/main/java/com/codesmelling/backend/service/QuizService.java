@@ -3,14 +3,10 @@ package com.codesmelling.backend.service;
 import com.codesmelling.backend.config.CsvFileConfigLoader;
 import com.codesmelling.backend.database.tables.Quiz;
 import com.codesmelling.backend.dto.Quiz.QuizContentDto;
-import com.codesmelling.backend.dto.Quiz.QuizDto;
 import com.codesmelling.backend.dto.Quiz.QuizFilesDto;
 import com.codesmelling.backend.dto.Quiz.QuizListDto;
 import com.codesmelling.backend.repository.QuizRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -19,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -74,27 +71,17 @@ public class QuizService {
         return dto;
     }
 
-    public List<QuizListDto> getQuizShortList() throws IOException {
-//        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-//        Resource codeDir = resolver.getResource("classpath:code");
-//
-//        File baseDir = codeDir.getFile();  // Działa tylko lokalnie
-//        File[] quizFolders = baseDir.listFiles(File::isDirectory);
-        File baseDir = new File("app/quizzes"); // <- folder na tym samym poziomie co JAR (czyli /app/quizzes)
-        File[] quizFolders = baseDir.listFiles(File::isDirectory);
+    public List<QuizListDto> getQuizShortList() {
+        List<Quiz> allQuizzes = quizRepository.findAll();
 
-        List<QuizListDto> result = new ArrayList<>();
-        if (quizFolders == null) return result;
-
-        for (File quizDir : quizFolders) {
-            String folderName = quizDir.getName();
-            Long quizId = extractQuizId(folderName);
-            if (quizId != null) {
-                result.add(new QuizListDto(quizId, folderName));
-            }
-        }
-
-        return result;
+        return allQuizzes.stream()
+                .map(q -> new QuizListDto(
+                        q.getId(),
+                        q.getQuizName(),
+                        q.getDifficulty(),
+                        q.getLanguages()
+                ))
+                .collect(Collectors.toList());
     }
 
     public void importQuizzes() throws IOException {
@@ -178,6 +165,19 @@ public class QuizService {
                 }
             }
         }
+    }
+
+    public List<QuizListDto> searchQuizzesByName(String query) {
+        List<Quiz> matchedQuizzes = quizRepository.findByQuizNameContainingIgnoreCase(query);
+
+        return matchedQuizzes.stream()
+                .map(quiz -> new QuizListDto(
+                        quiz.getId(),
+                        quiz.getQuizName(),
+                        quiz.getDifficulty(),
+                        quiz.getLanguages()
+                ))
+                .toList();
     }
 
     public String getFileContentInQuiz(Long quizId, String relativePath) throws IOException {
