@@ -1,4 +1,4 @@
-quizName
-quiz1
-quiz2
-quiz3
+quizName;difficulty;languages
+quiz1;1;Java
+quiz2;3;Java
+quiz3;5;TypeScript,Python,Go
