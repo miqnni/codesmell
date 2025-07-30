@@ -7,6 +7,7 @@ import "highlight.js/styles/github-dark.css";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import CodeOverlayLine from "./CodeOverlayLine";
 import LineHighlight from "@/interfaces/LineHighlight";
+import PathToLineToTagMap from "@/interfaces/PathToLineToTagMap";
 
 export default function CodeDisplay(props: {
   codeContent: string;

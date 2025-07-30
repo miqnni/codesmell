@@ -5,6 +5,7 @@ import { Box, Flex } from "@chakra-ui/react";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import VisualErrorTag from "./VisualErrorTag";
 import VisualErrorTagContainer from "./VisualErrorTagContainer";
+import PathToLineToTagMap from "@/interfaces/PathToLineToTagMap";
 
 export default function CodeOverlayLine(props: {
   lineNumber: number;

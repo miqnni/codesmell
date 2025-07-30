@@ -11,6 +11,7 @@ import {
   useDisclosure,
   Dialog,
 } from '@chakra-ui/react';
+import TaskStats from '@/components/features/profile/TaskStats';
 
 const UserAvatar = ({ avatarUrl, onAvatarChange }: { avatarUrl: string; onAvatarChange: (url: string) => void }) => {
   const { open: isOpen, onOpen, onClose } = useDisclosure();
@@ -90,14 +91,6 @@ const Username = ({ name }: { name: string | null }) => {
   );
 };
 
-// Liczba rozwiązanych zadań
-const TaskStats = ({ solvedCount }: { solvedCount?: number }) => {
-  return (
-    <Text fontSize="md" color="gray.600">
-      Rozwiązane zadania: {solvedCount ?? 0}
-    </Text>
-  );
-};
 
 // Lista zadań (placeholder)
 const TaskList = () => {
@@ -113,8 +106,10 @@ const TaskList = () => {
 };
 
 // Główny komponent profilu
-const ProfilePage = () => {
+export default function Page(){
 
+  const [avatarUrl, setAvatarUrl] = useState<string>('https://bit.ly/broken-link');
+  const [username, setUsername] = useState<string | null>(null);
   const [data, setData] = useState<string>();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -130,6 +125,7 @@ const ProfilePage = () => {
         if (res.ok){
           const restext = await res.text();
           setData(restext);
+          setUsername(restext)
         }
       } catch (e) {
         setIsError(true);
@@ -149,23 +145,12 @@ const ProfilePage = () => {
     return () => controller.abort();
   }, [getData]);
 
-  const [avatarUrl, setAvatarUrl] = useState<string>('https://bit.ly/broken-link');
-  const [username, setUsername] = useState<string | null>(null);
-  const [solvedTasks, setSolvedTasks] = useState<number | undefined>(undefined);
-
-  useEffect(() => {
-    if (data)
-      setUsername(data)
-   }, [data]);
-
   return (
     <VStack p={6} align="center" w="100%" maxW="md" mx="auto">
       <UserAvatar avatarUrl={avatarUrl} onAvatarChange={setAvatarUrl} />
       <Username name={username} />
-      <TaskStats solvedCount={solvedTasks} />
+      <TaskStats token={username}/>
       <TaskList />
     </VStack>
   );
 };
-
-export default ProfilePage;
