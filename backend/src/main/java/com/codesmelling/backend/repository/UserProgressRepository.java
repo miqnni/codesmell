@@ -12,4 +12,6 @@ public interface UserProgressRepository extends JpaRepository<UserProgress, Long
     Optional<UserProgress> findByUserIdAndQuizId(Long userId, Long quizId);
     List<UserProgress> findAllByUserId(Long userId);
     Optional<UserProgress> findByUserAndQuiz(AppUser user, Quiz quiz);
+    List<UserProgress> findByUser(AppUser user);
+    List<UserProgress> findByUserAndCompletedTrue(AppUser user);
 }
