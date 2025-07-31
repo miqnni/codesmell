@@ -23,6 +23,8 @@ const conditionalLineBackground = (
         return "#00aa0055";
       case "incorrect":
         return "#aa000055";
+      case "partiallyCorrect":
+        return "#aa550055";
       case "missing":
         return "#aaaa0055";
     }

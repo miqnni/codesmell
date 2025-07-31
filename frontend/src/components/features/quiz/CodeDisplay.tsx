@@ -46,6 +46,22 @@ const createPathToLineToAnswerStateMap = (
   for (const { lineState, arr } of arrayEntries) {
     for (const { filePath, lineNumber } of arr) {
       if (!res[filePath]) res[filePath] = {};
+
+      if (
+        res[filePath][Number(lineNumber)] &&
+        res[filePath][Number(lineNumber)] === "correct" &&
+        lineState === "incorrect"
+      ) {
+        res[filePath][Number(lineNumber)] = "partiallyCorrect";
+        continue;
+      } else if (
+        res[filePath][Number(lineNumber)] &&
+        ["incorrect", "partiallyCorrect"].includes(
+          res[filePath][Number(lineNumber)]
+        )
+      )
+        continue;
+
       res[filePath][Number(lineNumber)] = lineState;
     }
   }

@@ -1,1 +1,5 @@
-export type LineStateInAnswer = "correct" | "incorrect" | "missing";
+export type LineStateInAnswer =
+  | "correct"
+  | "incorrect"
+  | "missing"
+  | "partiallyCorrect";
