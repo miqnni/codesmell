@@ -43,4 +43,5 @@ public class AppUser implements UserDetails {
     @Override public boolean isAccountNonLocked() { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }
     @Override public boolean isEnabled() { return true; }
+    public boolean isAdmin(){return role.equals("ROLE_ADMIN");}
 }
