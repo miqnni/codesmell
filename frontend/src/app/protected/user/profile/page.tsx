@@ -126,7 +126,7 @@ const ProfilePage = () => {
       setIsError(false);
       try {
         const token = localStorage.getItem("token")
-        const res = await fetch(`http://localhost:8080/auth/giveMeMyName`, {
+        const res = await fetch(`http://localhost:8080/api/users/giveMeMyName`, {
           method: "GET",
         headers: {
           "Authentication": `Bearer: ${token}`
