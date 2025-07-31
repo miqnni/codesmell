@@ -1,4 +1,4 @@
-package com.codesmelling.backend.controller;
+package com.codesmelling.backend.config;
 import com.codesmelling.backend.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -13,8 +13,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.codesmelling.backend.database.tables.AppUser;
-
-import java.util.Optional;
 
 @Configuration
 @RequiredArgsConstructor

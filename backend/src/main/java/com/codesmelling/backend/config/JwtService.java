@@ -1,4 +1,4 @@
-package com.codesmelling.backend.auth;
+package com.codesmelling.backend.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
