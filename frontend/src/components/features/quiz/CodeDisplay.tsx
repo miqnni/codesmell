@@ -40,7 +40,7 @@ const createPathToLineToAnswerStateMap = (
   const arrayEntries: { lineState: LineStateInAnswer; arr: ErrorTag[] }[] = [
     { lineState: "correct", arr: submissionResults.correctAnswers },
     { lineState: "incorrect", arr: submissionResults.incorrectAnswers },
-    { lineState: "missing", arr: submissionResults.missingAnswers },
+    { lineState: "missing", arr: submissionResults.missingAnswers }, // If ANY of the line's required tags is missing, the "correct" line state will be overwritten by "missing"
   ];
 
   for (const { lineState, arr } of arrayEntries) {
