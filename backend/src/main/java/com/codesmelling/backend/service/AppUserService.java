@@ -5,7 +5,7 @@ import com.codesmelling.backend.database.tables.AppUser;
 import com.codesmelling.backend.dto.User.LoginUserDto;
 import com.codesmelling.backend.dto.User.RegisterUserDto;
 import com.codesmelling.backend.repository.AppUserRepository;
-import com.codesmelling.backend.auth.JwtService;
+import com.codesmelling.backend.config.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
