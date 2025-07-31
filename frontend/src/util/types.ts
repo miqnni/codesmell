@@ -1,1 +1,5 @@
-// TODO - custom types (e.g. unions)
+export type LineStateInAnswer =
+  | "correct"
+  | "incorrect"
+  | "missing"
+  | "partiallyCorrect";

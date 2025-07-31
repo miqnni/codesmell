@@ -3,6 +3,7 @@
 import ErrorTag from "@/interfaces/ErrorTag";
 import FinalAnswer from "@/interfaces/FinalAnswer";
 import PathToLineToTagMap from "@/interfaces/PathToLineToTagMap";
+import SubmissionResults from "@/interfaces/SubmissionResults";
 import {
   Box,
   Button,
@@ -15,21 +16,22 @@ import { useCallback, useEffect, useState } from "react";
 
 // TODO - move the results feedback to a separate component
 
-interface SubmissionResults {
-  correctAnswers: ErrorTag[];
-  incorrectAnswers: ErrorTag[];
-  missingAnswers: ErrorTag[];
-  score: number;
-  scorePercent: number;
-}
-
 // ***********************************************************
 
 export default function SubmitDialog(props: {
   exerciseId: string;
   pathToLineToTagMap: PathToLineToTagMap;
+  submissionResults: SubmissionResults | undefined;
+  onAnswerSubmit: (nextSubmissionResults: SubmissionResults) => void;
+  isAnswerSubmitted: boolean;
 }) {
-  const { exerciseId, pathToLineToTagMap } = props;
+  const {
+    exerciseId,
+    pathToLineToTagMap,
+    submissionResults,
+    onAnswerSubmit,
+    isAnswerSubmitted,
+  } = props;
   const defaultFinalAnswer = {
     username: "(Username not fetched)",
     quizId: exerciseId,
@@ -49,18 +51,15 @@ export default function SubmitDialog(props: {
 
   // * getUsername state variables
   const [usernameData, setUsernameData] = useState<string>("(no username)");
-  const [usernameError, setUsernameError] = useState("");
-  const [isUsernameLoading, setIsUsernameLoading] = useState(false);
-  const [isUsernameError, setIsUsernameError] = useState(false);
+  const [, setUsernameError] = useState("");
+  const [, setIsUsernameLoading] = useState(false);
+  const [, setIsUsernameError] = useState(false);
 
   // * postFinalAnswer state variables
-  const [submissionResults, setSubmissionResults] =
-    useState<SubmissionResults>();
-  const [submissionResultsError, setSubmissionResultsError] = useState("");
-  const [isSubmissionResultsLoading, setIsSubmissionResultsLoading] =
-    useState(false);
-  const [isSubmissionResultsError, setIsSubmissionResultsError] =
-    useState(false);
+
+  const [, setSubmissionResultsError] = useState("");
+  const [, setIsSubmissionResultsLoading] = useState(false);
+  const [, setIsSubmissionResultsError] = useState(false);
 
   // ********* (end fetch state variables) *********
 
@@ -100,28 +99,31 @@ export default function SubmitDialog(props: {
 
   // ********* FINAL ANSWER / SUBMISSION RESULTS POST FETCH *********
 
-  const postFinalAnswer = useCallback(async (signal: AbortSignal, answerToPost: FinalAnswer) => {
-    setIsSubmissionResultsLoading(true);
-    setIsSubmissionResultsError(false);
-    try {
-      const res = await fetch(`http://localhost:8080/api/quiz/submit`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(answerToPost),
-      });
-      const resJSON = await res.json();
-      setSubmissionResults(resJSON);
-    } catch (e) {
-      setIsSubmissionResultsError(true);
-      if (typeof e === "string") setSubmissionResultsError(e);
-      else if (e instanceof Error) setSubmissionResultsError(e.message);
-      else setSubmissionResultsError("Error");
-    } finally {
-      setIsSubmissionResultsLoading(false);
-    }
-  }, []);
+  const postFinalAnswer = useCallback(
+    async (signal: AbortSignal, answerToPost: FinalAnswer) => {
+      setIsSubmissionResultsLoading(true);
+      setIsSubmissionResultsError(false);
+      try {
+        const res = await fetch(`http://localhost:8080/api/quiz/submit`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(answerToPost),
+        });
+        const resJSON = await res.json();
+        onAnswerSubmit(resJSON);
+      } catch (e) {
+        setIsSubmissionResultsError(true);
+        if (typeof e === "string") setSubmissionResultsError(e);
+        else if (e instanceof Error) setSubmissionResultsError(e.message);
+        else setSubmissionResultsError("Error");
+      } finally {
+        setIsSubmissionResultsLoading(false);
+      }
+    },
+    [onAnswerSubmit]
+  );
 
   // useEffect(() => {
   //   const controller = new AbortController();
@@ -164,7 +166,7 @@ export default function SubmitDialog(props: {
     const answer = createFinalAnswer();
     setFinalAnswer(answer);
     postFinalAnswer(controller.signal, answer);
-    setOpenResult(true)
+    setOpenResult(true);
     return () => controller.abort();
   };
 
@@ -178,6 +180,7 @@ export default function SubmitDialog(props: {
             size="sm"
             mt={4}
             disabled={!isLoggedIn}
+            hidden={isAnswerSubmitted}
           >
             {isLoggedIn ? <Text>Submit</Text> : <Text>Log in to submit</Text>}
           </Button>
@@ -192,8 +195,8 @@ export default function SubmitDialog(props: {
               <Dialog.Body>
                 <Text>
                   You will not be able to change your answer after submitting.
-                  Your answer applies to <strong>all</strong> the files, not only
-                  to the one that is being viewed right now.
+                  Your answer applies to <strong>all</strong> the files, not
+                  only to the one that is being viewed right now.
                 </Text>
                 <Box my={4} maxH="50vh" overflowY="auto">
                   <pre>
@@ -215,37 +218,45 @@ export default function SubmitDialog(props: {
             </Dialog.Content>
           </Dialog.Positioner>
         </Portal>
-      </Dialog.Root><Dialog.Root open={openResult} onOpenChange={({ open }) => setOpenResult(open)}>
-          <Portal>
-            <Dialog.Backdrop />
-            <Dialog.Positioner>
-              <Dialog.Content>
-                <Dialog.Header>
-                  <Dialog.Title>Result</Dialog.Title>
-                </Dialog.Header>
-                <Dialog.Body>
-                  <Text>
-                    Score: {submissionResults?.score}
-                  </Text>
-                  <Text>
-                    Percentage: {submissionResults?.scorePercent}%
-                  </Text>
-                  <Box my={4} maxH="50vh" overflowY="auto">
-                    <pre>
-                      <code>{JSON.stringify(submissionResults, null, 2)}</code>
-                    </pre>
-                  </Box>
-                </Dialog.Body>
-                <Dialog.Footer>
-                  <Dialog.ActionTrigger asChild>
-                    <Button variant="outline">OK</Button>
-                  </Dialog.ActionTrigger>
-                </Dialog.Footer>
-              </Dialog.Content>
-            </Dialog.Positioner>
-          </Portal>
-        </Dialog.Root>
-        <Button onClick={()=>{setOpenResult(true)}}>Result</Button>
-      </>
+      </Dialog.Root>
+      <Dialog.Root
+        open={openResult}
+        onOpenChange={({ open }) => setOpenResult(open)}
+      >
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>Result</Dialog.Title>
+              </Dialog.Header>
+              <Dialog.Body>
+                <Text>Score: {submissionResults?.score}</Text>
+                <Text>Percentage: {submissionResults?.scorePercent}%</Text>
+                <Box my={4} maxH="50vh" overflowY="auto">
+                  <pre>
+                    <code>{JSON.stringify(submissionResults, null, 2)}</code>
+                  </pre>
+                </Box>
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Dialog.ActionTrigger asChild>
+                  <Button variant="outline">OK</Button>
+                </Dialog.ActionTrigger>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
+      <Button
+        variant="solid"
+        onClick={() => {
+          setOpenResult(true);
+        }}
+        hidden={!isAnswerSubmitted}
+      >
+        Result
+      </Button>
+    </>
   );
 }
