@@ -34,20 +34,6 @@ public class SecurityConfig {
         this.authenticationProvider = authenticationProvider;
     }
 
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http
-//                .csrf(csrf -> csrf.disable()) // Wyłączenie CSRF dla prostoty testów
-//                .authorizeHttpRequests(auth -> auth
-//                        .anyRequest().permitAll()
-//                // .requestMatchers("/import", "/list").permitAll() // <-- pozwól na /import bez
-//                // logowania
-//                // .anyRequest().authenticated() // reszta endpointów wymaga autoryzacji
-//                )
-//                .formLogin(Customizer.withDefaults());
-//
-//        return http.build();
-//    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -69,28 +55,18 @@ public class SecurityConfig {
         return http.build();
     }
 
-//    @Bean
-//    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-//        return config.getAuthenticationManager();
-//    }
-//
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
-
-
     // Bean do konfiguracji CORS
     @Bean
-    public WebMvcConfigurer corsConfigurationSource() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // zezwól na wszystkie endpointy
-                        .allowedOrigins("http://localhost:3000") // adres frontendu
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*");
-            }
-        };
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true); // jeśli potrzebujesz cookies itp.
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
+
 }
