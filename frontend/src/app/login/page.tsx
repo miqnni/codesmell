@@ -29,8 +29,8 @@ export default function RegisterForm() {
         body: JSON.stringify(formData)
       });
       if (res.ok) {
-        const data = await res.text()
-        localStorage.setItem("token", data)
+        const data = await res.json()
+        localStorage.setItem("token", data.token)
         router.push("/protected/user/profile");
       } else {
         const text = await res.text();

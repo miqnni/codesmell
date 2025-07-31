@@ -129,7 +129,7 @@ const ProfilePage = () => {
         const res = await fetch(`http://localhost:8080/api/users/giveMeMyName`, {
           method: "GET",
         headers: {
-          "Authentication": `Bearer: ${token}`
+          "Authorization": `Bearer ${token}`
         }
          });
         if (res.ok){
