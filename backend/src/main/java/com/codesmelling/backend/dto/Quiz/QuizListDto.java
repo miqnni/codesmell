@@ -1,30 +1,15 @@
 package com.codesmelling.backend.dto.Quiz;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.Set;
+
 @Data
+@AllArgsConstructor
 public class QuizListDto {
     private Long quizId;
     private String quizName;
-
-    public QuizListDto(Long quizId, String quizName) {
-        this.quizId = quizId;
-        this.quizName = quizName;
-    }
-
-    public Long getQuizId() {
-        return quizId;
-    }
-
-    public void setQuizId(Long quizId) {
-        this.quizId = quizId;
-    }
-
-    public String getQuizName() {
-        return quizName;
-    }
-
-    public void setQuizName(String quizName) {
-        this.quizName = quizName;
-    }
+    private int difficulty;
+    private Set<String> languages;
 }
