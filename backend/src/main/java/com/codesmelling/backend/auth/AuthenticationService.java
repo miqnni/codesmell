@@ -19,6 +19,10 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationResponse register(RegisterRequest request) {
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+
         AppUser user = AppUser.builder()
                 .username(request.getUsername())
                 .email(request.getEmail()) // może być null
