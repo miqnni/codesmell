@@ -85,7 +85,7 @@ const UserAvatar = ({ avatarUrl, onAvatarChange }: { avatarUrl: string; onAvatar
 const Username = ({ name }: { name: string | null }) => {
   return (
     <Text fontSize="2xl" fontWeight="bold">
-      {name || 'Domyślny Użytkownik'}
+      {name || 'Niezalogowany'}
     </Text>
   );
 };
@@ -117,7 +117,7 @@ const ProfilePage = () => {
 
   const [data, setData] = useState<string>();
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
   const getData = useCallback(
@@ -166,7 +166,7 @@ const ProfilePage = () => {
   return (
     <VStack p={6} align="center" w="100%" maxW="md" mx="auto">
       <UserAvatar avatarUrl={avatarUrl} onAvatarChange={setAvatarUrl} />
-      <Username name={username} />
+      <Username name={isLoading ? "Trwa Ładowanie" : username} />
       <TaskStats solvedCount={solvedTasks} />
       <TaskList />
     </VStack>

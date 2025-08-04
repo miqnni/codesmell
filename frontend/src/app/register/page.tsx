@@ -32,7 +32,7 @@ export default function RegisterForm() {
 
       const text = await res.text();
       if (res.ok) {
-        router.push("/protected/user/profile");
+        router.push("/login");
       } else {
         setResponseMessage(text);
       }

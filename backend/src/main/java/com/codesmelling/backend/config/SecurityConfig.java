@@ -43,7 +43,7 @@ public class SecurityConfig {
                 //.cors()
                 //.and()
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/import", "/auth/**", "/api/quiz/**").permitAll()
+                        .requestMatchers("/import", "/auth/**", "/api/quiz/**", "/tags/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

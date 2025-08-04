@@ -104,7 +104,7 @@ export default function SubmitDialog(props: {
       setIsSubmissionResultsLoading(true);
       setIsSubmissionResultsError(false);
       try {
-        const res = await fetch(`http://localhost:8080/api/quiz/submit`, {
+        const res = await fetch(`http://localhost:8080/api/result/submit`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
