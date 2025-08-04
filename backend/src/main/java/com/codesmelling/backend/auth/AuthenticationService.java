@@ -39,6 +39,10 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+
+        AppUser user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -47,12 +51,8 @@ public class AuthenticationService {
                     )
             );
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid username or password");
+            throw new IllegalArgumentException("Invalid credentials");
         }
-
-
-        AppUser user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
         String jwt = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
