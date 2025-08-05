@@ -6,9 +6,7 @@ interface Completed{
     totalCount : number
 }
 
-export default function TaskStats(props: {token : string | null}){
-    const {token}=props
-
+export default function TaskStats(){
     const [taskCountData, setTaskCountData] = useState<Completed>(
         {
             completedCount: 0,
@@ -23,10 +21,15 @@ export default function TaskStats(props: {token : string | null}){
         setIsTaskCountLoading(true);
         setIsTaskCountError(false);
         try {
+          const token = localStorage.getItem("token")
           if (!token) return;
           const res = await fetch(
-            `http://localhost:8080/api/progress/summary?username=${token}`,
-            { signal }
+            `http://localhost:8080/api/progress/summary`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+           }
           );
           const resJson = await res.json();
           setTaskCountData(resJson);
@@ -38,18 +41,18 @@ export default function TaskStats(props: {token : string | null}){
         } finally {
           setIsTaskCountLoading(false);
         }
-      }, [token]);
+      }, []);
     
       useEffect(() => {
         const controller = new AbortController();
         getTaskCountData(controller.signal);
         return () => controller.abort();
-      }, [getTaskCountData, token]);
+      }, [getTaskCountData]);
 
 
   return (
-    <><Text fontSize="md" color="gray.600">
+    <Text fontSize="md" color="gray.600">
           Rozwiązane zadania: {taskCountData.completedCount}{taskCountData.totalCount ? `/${taskCountData.totalCount}` : ""}
-      </Text><Button onClick={()=>console.log(taskCountData)}>123</Button></>
+    </Text>
   );
 };

@@ -154,7 +154,7 @@ export default function Page(){
     <VStack p={6} align="center" w="100%" maxW="md" mx="auto">
       <UserAvatar avatarUrl={avatarUrl} onAvatarChange={setAvatarUrl} />
       <Username name={isLoading ? "Trwa Ładowanie" : username} />
-      <TaskStats token={username}/>
+      <TaskStats />
       <TaskList />
     </VStack>
   );
