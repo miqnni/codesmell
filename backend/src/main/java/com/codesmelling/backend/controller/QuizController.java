@@ -4,6 +4,7 @@ import com.codesmelling.backend.dto.FileContentDto;
 import com.codesmelling.backend.dto.Quiz.QuizContentDto;
 import com.codesmelling.backend.dto.Quiz.QuizFilesDto;
 import com.codesmelling.backend.dto.Quiz.QuizListDto;
+import com.codesmelling.backend.dto.Quiz.QuizSearchRequestDto;
 import com.codesmelling.backend.service.QuizService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -38,10 +39,15 @@ public class QuizController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<QuizListDto>> searchQuizzes(@RequestParam String query) {
-        List<QuizListDto> result = quizService.searchQuizzesByName(query);
+    @PostMapping("/search")
+    public ResponseEntity<List<QuizListDto>> searchQuizzes(@RequestBody QuizSearchRequestDto request) {
+        List<QuizListDto> result = quizService.searchQuizzes(request);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/languages")
+    public ResponseEntity<List<String>> getAllLanguages() {
+        return ResponseEntity.ok(quizService.getAllDistinctLanguages());
     }
 
     @GetMapping("/{quizId}/file")
