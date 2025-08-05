@@ -27,7 +27,10 @@ export default function RegisterForm() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          email: formData.email.trim() === "" ? null : formData.email
+        })
       });
 
       const text = await res.text();
@@ -62,7 +65,6 @@ export default function RegisterForm() {
           value={formData.email}
           onChange={handleChange}
           className="w-full p-2 border rounded"
-          required
         />
         <input
           type="password"
