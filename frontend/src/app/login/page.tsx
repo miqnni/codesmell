@@ -31,6 +31,7 @@ export default function RegisterForm() {
       if (res.ok) {
         const data = await res.json()
         localStorage.setItem("token", data.token)
+        window.dispatchEvent(new Event("newtoken"));
         router.push("/protected/user/profile");
       } else {
         const text = await res.text();
