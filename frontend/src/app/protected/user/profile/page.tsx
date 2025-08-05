@@ -12,6 +12,7 @@ import {
   Dialog,
 } from '@chakra-ui/react';
 import TaskStats from '@/components/features/profile/TaskStats';
+import DoneTaskList from '@/components/features/profile/DoneTaskList';
 
 const UserAvatar = ({ avatarUrl, onAvatarChange }: { avatarUrl: string; onAvatarChange: (url: string) => void }) => {
   const { open: isOpen, onOpen, onClose } = useDisclosure();
@@ -91,20 +92,6 @@ const Username = ({ name }: { name: string | null }) => {
   );
 };
 
-
-// Lista zadań (placeholder)
-const TaskList = () => {
-  return (
-    <Box mt={4} w="100%">
-      <Text fontSize="lg" fontWeight="semibold" mb={2}>
-        Twoje zadania:
-      </Text>
-      {/* Tu możesz wczytać dane z bazy*/}
-      <Text color="gray.500">(Brak zadań)</Text>
-    </Box>
-  );
-};
-
 // Główny komponent profilu
 export default function Page(){
 
@@ -155,7 +142,7 @@ export default function Page(){
       <UserAvatar avatarUrl={avatarUrl} onAvatarChange={setAvatarUrl} />
       <Username name={isLoading ? "Trwa Ładowanie" : username} />
       <TaskStats />
-      <TaskList />
+      <DoneTaskList />
     </VStack>
   );
 };
