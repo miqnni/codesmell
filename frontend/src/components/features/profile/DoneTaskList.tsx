@@ -60,7 +60,7 @@ export default function DoneTaskList(){
       ) : taskListData && taskListData.length > 0 ? (
         taskListData.slice().reverse().map((task) => (
           <Box key={task.quizId}>
-            <Text>{task.quizName}: {task.scorePercent}%</Text>
+            <Text>{task.quizName}: {Math.floor(task.scorePercent*10)/10}%</Text>
           </Box>
         ))
       ) : (
