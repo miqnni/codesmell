@@ -214,7 +214,7 @@ export default function WithAction() {
                 {isLoggedIn ? (
                   <Menu.Content>
                     <Menu.Item value="account">
-                      <Link href="protected/user/profile">Account</Link>
+                      <Link href="/protected/user/profile">Account</Link>
                     </Menu.Item>
                     <Menu.Item value="settings">
                       <Link href="/user/profile/edit">Settings</Link>
