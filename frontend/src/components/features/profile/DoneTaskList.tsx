@@ -58,7 +58,7 @@ export default function DoneTaskList(){
       ) : isTaskListError ? (
         <Text color="red.500">Wystąpił problem z ładowaniem listy</Text>
       ) : taskListData && taskListData.length > 0 ? (
-        taskListData.map((task) => (
+        taskListData.slice().reverse().map((task) => (
           <Box key={task.quizId}>
             <Text>{task.quizName}: {task.scorePercent}%</Text>
           </Box>
