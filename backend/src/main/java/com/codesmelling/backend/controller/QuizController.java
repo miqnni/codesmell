@@ -45,6 +45,11 @@ public class QuizController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/languages")
+    public ResponseEntity<List<String>> getAllLanguages() {
+        return ResponseEntity.ok(quizService.getAllDistinctLanguages());
+    }
+
     @GetMapping("/{quizId}/file")
     public ResponseEntity<FileContentDto> getQuizFileContent(
             @PathVariable Long quizId,

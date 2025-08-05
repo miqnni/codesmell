@@ -199,6 +199,10 @@ public class QuizService {
                 .toList();
     }
 
+    public List<String> getAllDistinctLanguages() {
+        return quizRepository.findAllDistinctLanguages();
+    }
+
     public String getFileContentInQuiz(Long quizId, String relativePath) throws IOException {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new RuntimeException("Quiz not found"));
