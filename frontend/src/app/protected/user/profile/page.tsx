@@ -86,7 +86,7 @@ const UserAvatar = ({ avatarUrl, onAvatarChange }: { avatarUrl: string; onAvatar
 const Username = ({ name }: { name: string | null }) => {
   return (
     <Text fontSize="2xl" fontWeight="bold">
-      {name || 'Domyślny Użytkownik'}
+      {name || 'Niezalogowany'}
     </Text>
   );
 };
@@ -112,7 +112,7 @@ export default function Page(){
   const [username, setUsername] = useState<string | null>(null);
   const [data, setData] = useState<string>();
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
   const getData = useCallback(
@@ -121,7 +121,12 @@ export default function Page(){
       setIsError(false);
       try {
         const token = localStorage.getItem("token")
-        const res = await fetch(`http://localhost:8080/api/users/giveMeMyName?token=${token}`, { signal });
+        const res = await fetch(`http://localhost:8080/api/users/giveMeMyName`, {
+          method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+         });
         if (res.ok){
           const restext = await res.text();
           setData(restext);
@@ -148,8 +153,8 @@ export default function Page(){
   return (
     <VStack p={6} align="center" w="100%" maxW="md" mx="auto">
       <UserAvatar avatarUrl={avatarUrl} onAvatarChange={setAvatarUrl} />
-      <Username name={username} />
-      <TaskStats token={username}/>
+      <Username name={isLoading ? "Trwa Ładowanie" : username} />
+      <TaskStats />
       <TaskList />
     </VStack>
   );

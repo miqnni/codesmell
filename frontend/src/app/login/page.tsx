@@ -21,7 +21,7 @@ export default function RegisterForm() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:8080/api/users/login", {
+      const res = await fetch("http://localhost:8080/auth/authenticate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -29,8 +29,9 @@ export default function RegisterForm() {
         body: JSON.stringify(formData)
       });
       if (res.ok) {
-        const data = await res.text()
-        localStorage.setItem("token", data)
+        const data = await res.json()
+        localStorage.setItem("token", data.token)
+        window.dispatchEvent(new Event("newtoken"));
         router.push("/protected/user/profile");
       } else {
         const text = await res.text();

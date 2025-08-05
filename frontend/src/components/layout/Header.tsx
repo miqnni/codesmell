@@ -25,7 +25,7 @@ import {
 import Link from "next/link";
 import { LuExternalLink, LuCirclePlus, LuMenu } from "react-icons/lu";
 import { MuseoModerno } from "next/font/google";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Props {
   children: React.ReactNode;
@@ -84,7 +84,59 @@ const museoModerno = MuseoModerno({ subsets: ["latin"] });
 export default function WithAction() {
   const { onOpen, onClose } = useDisclosure();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState("Default User");
+  const [usernameData, setUsernameData] = useState<string>("Niezalogowany");
+  const [, setUsernameError] = useState("");
+  const [, setIsUsernameLoading] = useState(false);
+  const [, setIsUsernameError] = useState(false);
+
+  const getUsernameData = useCallback(
+        async (signal: AbortSignal) => {
+          setIsUsernameLoading(true);
+          setIsUsernameError(false);
+          try {
+            const token = localStorage.getItem("token")
+            const res = await fetch(`http://localhost:8080/api/users/giveMeMyName`, {
+              method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+             });
+            if (res.ok){
+              setIsLoggedIn(true)
+              const restext = await res.text();
+              setUsernameData(restext);
+            }
+          } catch (e) {
+            setIsLoggedIn(false)
+            setIsUsernameError(true);
+            if (typeof e === "string") setUsernameError(e);
+            else if (e instanceof Error) setUsernameError(e.message);
+            else setUsernameError("Error");
+          } finally {
+            setIsUsernameLoading(false);
+          }
+        },
+        []
+      );
+    
+    useEffect(() => {
+      const controller = new AbortController();
+      getUsernameData(controller.signal);
+      return () => controller.abort();
+    }, [getUsernameData]);
+
+    useEffect(() => {
+      const handleStorageChange = () => {
+        const controller = new AbortController();
+        getUsernameData(controller.signal);
+        return () => controller.abort();
+      }
+      window.addEventListener("newtoken", handleStorageChange);
+      return () => {
+        window.removeEventListener("newtoken", handleStorageChange);
+      };
+    }, [getUsernameData]);
+
 
   return (
     <Box
@@ -162,7 +214,7 @@ export default function WithAction() {
                 {isLoggedIn ? (
                   <Menu.Content>
                     <Menu.Item value="account">
-                      <Link href="protected/user/profile">Account</Link>
+                      <Link href="/protected/user/profile">Account</Link>
                     </Menu.Item>
                     <Menu.Item value="settings">
                       <Link href="/user/profile/edit">Settings</Link>
@@ -173,6 +225,7 @@ export default function WithAction() {
                         onClick={() => {
                           localStorage.removeItem("token");
                           setIsLoggedIn(false);
+                          setUsernameData("Niezalogowany");
                         }}
                       >
                         Logout
@@ -185,7 +238,7 @@ export default function WithAction() {
                       <Link href="/register">Sign Up</Link>
                     </Menu.Item>
                     <Menu.Item value="log-in">
-                      <Link href="/login" onClick={() => setIsLoggedIn(true)}>
+                      <Link href="/login">
                         Log In
                       </Link>
                     </Menu.Item>

@@ -21,6 +21,7 @@ import SubmitDialog from "@/components/features/quiz/SubmitDialog";
 import PathToLineToTagMap from "@/interfaces/PathToLineToTagMap";
 import SubmissionResults from "@/interfaces/SubmissionResults";
 import ErrorTagDetails from "@/interfaces/ErrorTagDetails";
+import HintDialog from "@/components/features/quiz/HintDialog";
 
 // ********* FETCH INTERFACES *********
 interface Node {
@@ -415,6 +416,9 @@ export default function Page() {
               setSubmissionResults(nextSubmissionResults);
             }}
             isAnswerSubmitted={isAnswerSubmitted}
+          />
+          <HintDialog 
+          exerciseId={exerciseId}
           />
         </Stack>
       </Box>

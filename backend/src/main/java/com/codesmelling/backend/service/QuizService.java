@@ -158,7 +158,7 @@ public class QuizService {
                 collectCodeFiles(baseDir, file, result);
             } else {
                 String fileName = file.getName();
-                if (!fileName.equals("Solution.txt") && !fileName.equals("ErrorTags.csv") && !fileName.equals("Tags.csv")) {
+                if (!fileName.equals("Solution.txt") && !fileName.equals("ErrorTags.csv") && !fileName.equals("Tags.csv") && !fileName.equals("Hints.txt")) {
                     // Ścieżka względna względem folderu quizu
                     Path relativePath = baseDir.toPath().relativize(file.toPath());
                     result.add(relativePath.toString().replace(File.separatorChar, '/'));
