@@ -65,29 +65,35 @@ export default function SubmitDialog(props: {
 
   // ********* USERNAME FETCH *********
 
-  const getUsernameData = useCallback(async (signal: AbortSignal) => {
-    setIsUsernameLoading(true);
-    setIsUsernameError(false);
-    try {
-      const token = localStorage.getItem("token");
-      setIsLoggedIn(Boolean(token));
-      if (token) {
-        const res = await fetch(
-          `http://localhost:8080/api/users/giveMeMyName?token=${token}`,
-          { signal }
-        );
-        const resText = await res.text();
-        setUsernameData(resText);
-      }
-    } catch (e) {
-      setIsUsernameError(true);
-      if (typeof e === "string") setUsernameError(e);
-      else if (e instanceof Error) setUsernameError(e.message);
-      else setUsernameError("Error");
-    } finally {
-      setIsUsernameLoading(false);
-    }
-  }, []);
+  const getUsernameData = useCallback(
+      async (signal: AbortSignal) => {
+        setIsUsernameLoading(true);
+        setIsUsernameError(false);
+        try {
+          const token = localStorage.getItem("token")
+          const res = await fetch(`http://localhost:8080/api/users/giveMeMyName`, {
+            method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+           });
+          if (res.ok){
+            setIsLoggedIn(true)
+            const restext = await res.text();
+            setUsernameData(restext);
+          }
+        } catch (e) {
+          setIsLoggedIn(false)
+          setIsUsernameError(true);
+          if (typeof e === "string") setUsernameError(e);
+          else if (e instanceof Error) setUsernameError(e.message);
+          else setUsernameError("Error");
+        } finally {
+          setIsUsernameLoading(false);
+        }
+      },
+      []
+    );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -104,10 +110,12 @@ export default function SubmitDialog(props: {
       setIsSubmissionResultsLoading(true);
       setIsSubmissionResultsError(false);
       try {
+        const token = localStorage.getItem("token");
         const res = await fetch(`http://localhost:8080/api/result/submit`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify(answerToPost),
         });
