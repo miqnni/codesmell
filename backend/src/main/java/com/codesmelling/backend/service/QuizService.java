@@ -5,6 +5,7 @@ import com.codesmelling.backend.database.tables.Quiz;
 import com.codesmelling.backend.dto.Quiz.QuizContentDto;
 import com.codesmelling.backend.dto.Quiz.QuizFilesDto;
 import com.codesmelling.backend.dto.Quiz.QuizListDto;
+import com.codesmelling.backend.dto.Quiz.QuizSearchRequestDto;
 import com.codesmelling.backend.repository.QuizRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -167,10 +168,28 @@ public class QuizService {
         }
     }
 
-    public List<QuizListDto> searchQuizzesByName(String query) {
-        List<Quiz> matchedQuizzes = quizRepository.findByQuizNameContainingIgnoreCase(query);
+    public List<QuizListDto> searchQuizzes(QuizSearchRequestDto request) {
+        String query = request.getQuery();
+        List<String> languages = request.getLanguages();
+        List<Integer> difficulties = request.getDifficulties();
 
-        return matchedQuizzes.stream()
+        List<Quiz> allQuizzes = quizRepository.findAll();
+
+        List<Quiz> filtered = allQuizzes.stream()
+                .filter(quiz -> {
+                    boolean matchesQuery = (query == null || query.isBlank()) || quiz.getQuizName().toLowerCase().contains(query.toLowerCase());
+
+                    boolean matchesLanguage = languages == null || languages.isEmpty() ||
+                            quiz.getLanguages().stream().anyMatch(lang -> languages.contains(lang));
+
+                    boolean matchesDifficulty = difficulties == null || difficulties.isEmpty() ||
+                            difficulties.contains(quiz.getDifficulty());
+
+                    return matchesQuery && matchesLanguage && matchesDifficulty;
+                })
+                .toList();
+
+        return filtered.stream()
                 .map(quiz -> new QuizListDto(
                         quiz.getId(),
                         quiz.getQuizName(),
