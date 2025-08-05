@@ -23,6 +23,10 @@ public class AuthenticationService {
             throw new IllegalArgumentException("Username already exists");
         }
 
+        if (request.getEmail() != null && userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email already in use");
+        }
+
         AppUser user = AppUser.builder()
                 .username(request.getUsername())
                 .email(request.getEmail()) // może być null
