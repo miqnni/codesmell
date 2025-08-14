@@ -1,11 +1,14 @@
 "use client";
 
-import { Button, Group } from "@chakra-ui/react";
+import { Button, ButtonGroup, Group } from "@chakra-ui/react";
 import SearchBar from "./SearchBar";
 
 import FullSearchAndFilterQuery from "@/interfaces/FullSearchAndFilterQuery";
 import { ChangeEvent, FormEventHandler, useState } from "react";
 import FilterMenu from "./FilterMenu";
+
+import dataLanguagesJSON from "./data_languages.json";
+import dataDiffucultyJSON from "./data_difficulty.json";
 
 const defaultFullSearchAndFilterQuery: FullSearchAndFilterQuery = {
   query: "",
@@ -18,9 +21,10 @@ export default function SearchAndFilterGroup() {
     defaultFullSearchAndFilterQuery
   );
 
-  const onSubmit: FormEventHandler<HTMLFormElement> = () => {
+  const onSubmit: FormEventHandler<HTMLFormElement> = (e) => {
     console.log("submit console log");
     console.log(userSearchAndFilterQuery);
+    e.preventDefault();
   };
 
   const onTextInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -28,27 +32,43 @@ export default function SearchAndFilterGroup() {
       ...userSearchAndFilterQuery,
       query: e.currentTarget.value,
     };
-    console.log(nextUserSearchAndFilterQuery);
     setUserSearchAndFilterQuery(nextUserSearchAndFilterQuery);
   };
 
-  const onLanguageFilterChange = () => {
-    console.log("TODO: onLanguageFilterChange");
+  const onLanguageFilterChange = (currentGroup: string[]) => {
+    const nextUserSearchAndFilterQuery = {
+      ...userSearchAndFilterQuery,
+      languages: currentGroup,
+    };
+    setUserSearchAndFilterQuery(nextUserSearchAndFilterQuery);
   };
 
-  const onDifficultyFilterChange = () => {
-    console.log("TODO: onDifficultyFilterChange");
+  const onDifficultyFilterChange = (currentGroup: string[]) => {
+    const nextUserSearchAndFilterQuery = {
+      ...userSearchAndFilterQuery,
+      difficulties: currentGroup.map((el) => Number(el)),
+    };
+    setUserSearchAndFilterQuery(nextUserSearchAndFilterQuery);
   };
 
-  // TODO: in SearchBar change the onSubmit method so that it sets the state to e.target.value
   return (
     <form onSubmit={onSubmit}>
-      <Group attached w="full" maxW="sm" h={8}>
+      <Group attached w="full" maxW="xl" h={8}>
         <SearchBar onTextInputChange={onTextInputChange} />
-        <FilterMenu />
-        <Button bg="bg.subtle" variant="outline" type="submit">
-          Search
-        </Button>
+        {/* size="sm" variant="outline" bg="bg.subtle" rounded="none" */}
+        <ButtonGroup bg="bg.subtle" size="md" variant="outline" attached>
+          <FilterMenu
+            menuName="Languages"
+            menuData={dataLanguagesJSON}
+            onFilterChange={onLanguageFilterChange}
+          />
+          <FilterMenu
+            menuName="Difficulty"
+            menuData={dataDiffucultyJSON}
+            onFilterChange={onDifficultyFilterChange}
+          />
+          <Button type="submit">Search</Button>
+        </ButtonGroup>
       </Group>
     </form>
   );

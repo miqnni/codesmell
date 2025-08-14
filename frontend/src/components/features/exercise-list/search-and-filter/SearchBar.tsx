@@ -1,8 +1,6 @@
 import { Input, InputGroup } from "@chakra-ui/react";
 import { ChangeEvent } from "react";
 import { LuSearch } from "react-icons/lu";
-import DataDiffucultyJSON from "./data_difficulty.json";
-import DataLanguagesJSON from "./data_languages.json";
 
 export default function SearchBar(props: {
   onTextInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
