@@ -4,10 +4,9 @@ import { Button, ButtonGroup, Group } from "@chakra-ui/react";
 import SearchBar from "./SearchBar";
 
 import FullSearchAndFilterQuery from "@/interfaces/FullSearchAndFilterQuery";
-import { ChangeEvent, FormEventHandler, useState } from "react";
+import { ChangeEvent, FormEventHandler, useCallback, useEffect, useState } from "react";
 import FilterMenu from "./FilterMenu";
 
-import dataLanguagesJSON from "./data_languages.json";
 import dataDiffucultyJSON from "./data_difficulty.json";
 
 const defaultFullSearchAndFilterQuery: FullSearchAndFilterQuery = {
@@ -51,6 +50,46 @@ export default function SearchAndFilterGroup() {
     setUserSearchAndFilterQuery(nextUserSearchAndFilterQuery);
   };
 
+  // Fetch
+
+  const [languagesData, setLanguagesData] = useState<string[]>();
+  const [, setLanguagesError] = useState("");
+  const [, setIsLanguagesLoading] = useState(false);
+  const [, setIsLanguagesError] = useState(false);
+
+  const getLanguagesData = useCallback(async (signal: AbortSignal) => {
+    setIsLanguagesLoading(true);
+    setIsLanguagesError(false);
+    try {
+      const res = await fetch(`http://localhost:8080/api/quiz/languages`, {
+        signal,
+      });
+      const resJson = await res.json();
+      setLanguagesData(resJson);
+    } catch (e) {
+      setIsLanguagesError(true);
+      if (typeof e === "string") setLanguagesError(e);
+      else if (e instanceof Error) setLanguagesError(e.message);
+      else setLanguagesError("Error");
+    } finally {
+      setIsLanguagesLoading(false);
+    }
+  }, []);
+  
+  useEffect(() => {
+    const controller = new AbortController();
+    getLanguagesData(controller.signal);
+    return () => controller.abort();
+  }, [getLanguagesData]);
+
+  let checkedLanguages : string[]
+  if(languagesData){
+    checkedLanguages = languagesData
+  }else{
+    checkedLanguages = ["błąd wczytywania"]
+  }
+    
+
   return (
     <form onSubmit={onSubmit}>
       <Group attached w="full" maxW="xl" h={8}>
@@ -59,7 +98,7 @@ export default function SearchAndFilterGroup() {
         <ButtonGroup bg="bg.subtle" size="md" variant="outline" attached>
           <FilterMenu
             menuName="Languages"
-            menuData={dataLanguagesJSON}
+            menuData={checkedLanguages}
             onFilterChange={onLanguageFilterChange}
           />
           <FilterMenu
