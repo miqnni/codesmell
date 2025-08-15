@@ -65,6 +65,22 @@ export default function Page() {
   const endRange = startRange + pageSize;
   const visibleItems = data ? data.slice(startRange, endRange) : [];
 
+  /*
+  ! ENDPOINTS
+  * GET /api/quiz/languages - zwraca wszystkie języki we wszystkich quizach
+
+  * POST /api/quiz/search - to, na co wysyłam Z FRONTENDU dane, żeby wyszukać; a oto, co mam wysłać:
+  public class QuizSearchRequestDto {
+    private String query;
+    private List<String> languages;
+    private List<Integer> difficulties;
+  }
+    
+  * Difficulties - zostawić w JSONie, bo uznaliśmy,
+  *   że poziom trudności będzie od 1 do 5
+  *   i będzie on zhardcodowany po obu stronach
+  */
+
   return (
     <Flex direction="column" align="center">
       {/* Heading and description */}
