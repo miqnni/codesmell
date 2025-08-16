@@ -12,7 +12,7 @@ export default function FilterMenu(props: {
   const group = useCheckboxGroup();
 
   return (
-    <Menu.Root>
+    <Menu.Root closeOnSelect={false}>
       <Menu.Trigger asChild>
         <Button>
           <LuFilter /> <Text>{menuName}</Text>
