@@ -15,14 +15,23 @@ const defaultFullSearchAndFilterQuery: FullSearchAndFilterQuery = {
   difficulties: [],
 };
 
-export default function SearchAndFilterGroup() {
+interface Quiz {
+  quizId: number;
+  quizName: string;
+}
+
+interface QuizArray extends Array<Quiz> {
+  quizzes: Quiz[];
+}
+
+export default function SearchAndFilterGroup(props: {setSearchData: (response: QuizArray)=>void}) {
+  const {setSearchData} = props;
+
   const [userSearchAndFilterQuery, setUserSearchAndFilterQuery] = useState(
     defaultFullSearchAndFilterQuery
   );
 
   const onSubmit: FormEventHandler<HTMLFormElement> = (e) => {
-    console.log("submit console log");
-    console.log(userSearchAndFilterQuery);
     e.preventDefault();
   };
 
@@ -49,6 +58,10 @@ export default function SearchAndFilterGroup() {
     };
     setUserSearchAndFilterQuery(nextUserSearchAndFilterQuery);
   };
+
+  const [, setSearchAndFilterResultsError] = useState("");
+  const [, setIsSearchAndFilterResultsError] = useState(false);
+  const [, setIsSearchAndFilterResultsLoading] = useState(false);
 
   // Fetch
 
@@ -88,7 +101,45 @@ export default function SearchAndFilterGroup() {
   }else{
     checkedLanguages = ["błąd wczytywania"]
   }
-    
+
+  const postUserSearchAndFilterQuery = useCallback(
+    async (
+      signal: AbortSignal,
+      searchAndFilterQuery: FullSearchAndFilterQuery
+    ) => {
+      setIsSearchAndFilterResultsLoading(true);
+      setIsSearchAndFilterResultsError(false);
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/quiz/search`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(searchAndFilterQuery),
+          }
+        );
+        const resJSON = await res.json();
+        setSearchData(resJSON);
+      } catch (e) {
+        setIsSearchAndFilterResultsError(true);
+        if (typeof e === "string") setSearchAndFilterResultsError(e);
+        else if (e instanceof Error) setSearchAndFilterResultsError(e.message);
+        else setSearchAndFilterResultsError("Error");
+      } finally {
+        setIsSearchAndFilterResultsLoading(false);
+      }
+    },
+    []
+  );
+
+  const handleSearch = () => {
+    const controller = new AbortController();
+    const searchParameters = userSearchAndFilterQuery;
+    postUserSearchAndFilterQuery(controller.signal, searchParameters);
+    return () => controller.abort();
+  };
 
   return (
     <form onSubmit={onSubmit}>
@@ -106,7 +157,7 @@ export default function SearchAndFilterGroup() {
             menuData={dataDiffucultyJSON}
             onFilterChange={onDifficultyFilterChange}
           />
-          <Button type="submit">Search</Button>
+          <Button type="submit" onClick={handleSearch}>Search</Button>
         </ButtonGroup>
       </Group>
     </form>

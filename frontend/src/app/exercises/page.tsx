@@ -92,7 +92,9 @@ export default function Page() {
       </Text>
 
       {/* Search and filter options */}
-      <SearchAndFilterGroup />
+      <SearchAndFilterGroup setSearchData={(response:QuizArray)=>{
+        setData(response)
+      }}/>
 
       {/* Exercises */}
       <Stack w="100%" my={4}>
