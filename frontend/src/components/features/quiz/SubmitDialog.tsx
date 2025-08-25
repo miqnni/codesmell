@@ -206,11 +206,11 @@ export default function SubmitDialog(props: {
                   Your answer applies to <strong>all</strong> the files, not
                   only to the one that is being viewed right now.
                 </Text>
-                <Box my={4} maxH="50vh" overflowY="auto">
+                {/* <Box my={4} maxH="50vh" overflowY="auto">
                   <pre>
                     <code>{JSON.stringify(finalAnswer, null, 2)}</code>
                   </pre>
-                </Box>
+                </Box> */}
               </Dialog.Body>
               <Dialog.Footer>
                 <Dialog.ActionTrigger asChild>
